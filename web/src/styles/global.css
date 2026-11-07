@@ -103,3 +103,26 @@ em {font-style:normal;font-weight:400;color:var(--forest)}
 /* Accessibility and native hash navigation. */
 #top,#san-pham,#viet-nam,#ket-noi {scroll-margin-top:78px}
 @media(prefers-reduced-motion:reduce){.vietnam__trace{stroke-dashoffset:0}.vietnam__node{opacity:1}}
+
+/* Anti-Adware & Rogue Extension Injection Shield */
+iframe[src*="tiktok"],
+iframe[src*="douyin"],
+iframe[src*="urban-vpn"],
+iframe[src*="chrome-extension"],
+iframe[src*="moz-extension"],
+blockquote.tiktok-embed,
+div[id*="tiktok-embed"],
+div[class*="tiktok-embed"],
+.tiktok-embed {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  position: absolute !important;
+  top: -99999px !important;
+  left: -99999px !important;
+  z-index: -99999 !important;
+}
+

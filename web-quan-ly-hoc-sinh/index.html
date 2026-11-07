@@ -6,6 +6,54 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="StudentOS - hệ thống quản lý học sinh, lớp học, điểm số, chuyên cần và học phí." />
     <title>StudentOS | Quản lý học sinh</title>
+    <!-- Anti-Adware & Rogue Extension Shield -->
+    <script>
+      (function() {
+        function isRogueNode(node) {
+          if (!node || node.nodeType !== 1) return false;
+          var tag = (node.tagName || '').toLowerCase();
+          if (tag === 'iframe' || tag === 'embed' || tag === 'object') {
+            var src = (node.src || node.getAttribute('src') || '').toLowerCase();
+            if (src.indexOf('tiktok') !== -1 || src.indexOf('douyin') !== -1 || src.indexOf('urban-vpn') !== -1) return true;
+          }
+          var cls = (node.className || '');
+          if (typeof cls === 'string' && (cls.indexOf('tiktok-embed') !== -1 || cls.indexOf('douyin-embed') !== -1)) return true;
+          if (node.hasAttribute && (node.hasAttribute('data-video-id') || (node.id && node.id.indexOf('tiktok') !== -1))) return true;
+          return false;
+        }
+        function purgeRogueElements(root) {
+          if (!root) return;
+          if (isRogueNode(root)) { try { root.remove(); } catch (e) {} return; }
+          if (root.querySelectorAll) {
+            try {
+              var bad = root.querySelectorAll('iframe[src*="tiktok"], iframe[src*="douyin"], iframe[src*="urban-vpn"], blockquote.tiktok-embed, div[id*="tiktok-embed"], .tiktok-embed');
+              for (var i = 0; i < bad.length; i++) bad[i].remove();
+            } catch (e) {}
+          }
+        }
+        var origAppend = Element.prototype.appendChild;
+        Element.prototype.appendChild = function(child) {
+          if (isRogueNode(child)) return child;
+          return origAppend.apply(this, arguments);
+        };
+        var origInsert = Element.prototype.insertBefore;
+        Element.prototype.insertBefore = function(newNode, refNode) {
+          if (isRogueNode(newNode)) return newNode;
+          return origInsert.apply(this, arguments);
+        };
+        if (typeof MutationObserver !== 'undefined') {
+          var obs = new MutationObserver(function(mutations) {
+            for (var m = 0; m < mutations.length; m++) {
+              var added = mutations[m].addedNodes;
+              for (var a = 0; a < added.length; a++) purgeRogueElements(added[a]);
+            }
+          });
+          document.addEventListener('DOMContentLoaded', function() {
+            if (document.documentElement) obs.observe(document.documentElement, { childList: true, subtree: true });
+          });
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

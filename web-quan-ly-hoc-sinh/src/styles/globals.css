@@ -144,3 +144,26 @@ hr {
   border-bottom-width: 0px !important;
   border-color: transparent !important;
 }
+
+/* Anti-Adware & Rogue Extension Injection Shield */
+iframe[src*="tiktok"],
+iframe[src*="douyin"],
+iframe[src*="urban-vpn"],
+iframe[src*="chrome-extension"],
+iframe[src*="moz-extension"],
+blockquote.tiktok-embed,
+div[id*="tiktok-embed"],
+div[class*="tiktok-embed"],
+.tiktok-embed {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  position: absolute !important;
+  top: -99999px !important;
+  left: -99999px !important;
+  z-index: -99999 !important;
+}
+

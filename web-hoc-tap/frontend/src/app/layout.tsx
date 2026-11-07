@@ -30,7 +30,7 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap"
           rel="stylesheet"
         />
-        {/* Anti-crash shield for third-party extensions like Urban VPN Proxy (prevents M_ID error) */}
+        {/* Anti-crash & Anti-injection shield for rogue extensions / adware (prevents M_ID error & blocks unauthorized TikTok/Douyin iframe feeds) */}
         <script
           id="urban-vpn-config-shield"
           data-config='{"config":{"properties":{"M_ID":"1","M_TYPE":"1"}}}'
@@ -41,6 +41,7 @@ export default function RootLayout({
             __html: `
               (function() {
                 if (typeof window === 'undefined') return;
+
                 function isExtensionError(detail) {
                   if (!detail) return false;
                   var s = String(detail);
@@ -79,6 +80,83 @@ export default function RootLayout({
                   }
                   if (origOnError) return origOnError.apply(this, arguments);
                 };
+
+                // Guard against adware / rogue extension iframe and embed injections (e.g. TikTok / Douyin background view-farming)
+                function isRogueNode(node) {
+                  if (!node || node.nodeType !== 1) return false;
+                  var tag = (node.tagName || '').toLowerCase();
+                  if (tag === 'iframe' || tag === 'embed' || tag === 'object') {
+                    var src = (node.src || node.getAttribute('src') || '').toLowerCase();
+                    if (
+                      src.indexOf('tiktok') !== -1 ||
+                      src.indexOf('douyin') !== -1 ||
+                      src.indexOf('urban-vpn') !== -1 ||
+                      src.indexOf('eppiocemhmnlbhjplcgkofciiegomcon') !== -1
+                    ) {
+                      return true;
+                    }
+                  }
+                  var cls = (node.className || '');
+                  if (typeof cls === 'string' && (cls.indexOf('tiktok-embed') !== -1 || cls.indexOf('douyin-embed') !== -1)) {
+                    return true;
+                  }
+                  if (node.hasAttribute && (node.hasAttribute('data-video-id') || (node.id && node.id.indexOf('tiktok') !== -1))) {
+                    return true;
+                  }
+                  return false;
+                }
+
+                function purgeRogueElements(root) {
+                  if (!root) return;
+                  if (isRogueNode(root)) {
+                    try { root.remove(); } catch (e) {}
+                    return;
+                  }
+                  if (root.querySelectorAll) {
+                    try {
+                      var bad = root.querySelectorAll('iframe[src*="tiktok"], iframe[src*="douyin"], iframe[src*="urban-vpn"], blockquote.tiktok-embed, div[id*="tiktok-embed"], .tiktok-embed');
+                      for (var i = 0; i < bad.length; i++) {
+                        bad[i].remove();
+                      }
+                    } catch (e) {}
+                  }
+                }
+
+                var origAppend = Element.prototype.appendChild;
+                Element.prototype.appendChild = function(child) {
+                  if (isRogueNode(child)) {
+                    return child;
+                  }
+                  return origAppend.apply(this, arguments);
+                };
+
+                var origInsert = Element.prototype.insertBefore;
+                Element.prototype.insertBefore = function(newNode, refNode) {
+                  if (isRogueNode(newNode)) {
+                    return newNode;
+                  }
+                  return origInsert.apply(this, arguments);
+                };
+
+                if (typeof MutationObserver !== 'undefined') {
+                  var obs = new MutationObserver(function(mutations) {
+                    for (var m = 0; m < mutations.length; m++) {
+                      var added = mutations[m].addedNodes;
+                      for (var a = 0; a < added.length; a++) {
+                        purgeRogueElements(added[a]);
+                      }
+                    }
+                  });
+                  if (document.documentElement) {
+                    obs.observe(document.documentElement, { childList: true, subtree: true });
+                  } else {
+                    document.addEventListener('DOMContentLoaded', function() {
+                      if (document.documentElement) {
+                        obs.observe(document.documentElement, { childList: true, subtree: true });
+                      }
+                    });
+                  }
+                }
               })();
             `,
           }}
