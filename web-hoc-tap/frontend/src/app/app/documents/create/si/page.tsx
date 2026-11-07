@@ -276,7 +276,7 @@ function AiQuizCreateContent() {
                 value={aiTopic}
                 onChange={(e) => handleTopicChange(e.target.value)}
                 style={{ resize: 'none' }}
-                className="w-full px-4 py-3 bg-google-input dark:bg-google-input-dark border border-slate-200/60 dark:border-transparent text-slate-900 dark:text-slate-100 rounded-xl text-sm outline-none focus:outline-none placeholder-slate-400 dark:placeholder-slate-500 transition-colors resize-none leading-relaxed"
+                className="w-full px-4 py-3 bg-white dark:bg-[#1e1f20] border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 text-slate-900 dark:text-slate-100 rounded-xl text-sm outline-none focus:outline-none focus:border-google-blue dark:focus:border-blue-500 focus:ring-1 focus:ring-google-blue/20 placeholder-slate-400 dark:placeholder-slate-500 transition-colors resize-none leading-relaxed"
                 required
               />
             </div>

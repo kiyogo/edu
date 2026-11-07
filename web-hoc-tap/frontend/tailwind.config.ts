@@ -35,8 +35,8 @@ const config: Config = {
           'pill-text': '#001d35',
           'pill-dark': '#2d2f31',
           'pill-dark-text': '#e3e3e3',
-          input: '#e9eef6',
-          'input-dark': '#282a2c',
+          input: '#ffffff',
+          'input-dark': '#1e1f20',
         },
       },
       borderRadius: {

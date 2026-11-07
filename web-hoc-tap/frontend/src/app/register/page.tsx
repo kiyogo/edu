@@ -235,7 +235,7 @@ function RegisterFormContent() {
             </Button>
           </form>
 
-          <div className="text-center text-xs text-slate-500 pt-3 border-t border-slate-100 dark:border-slate-800">
+          <div className="text-center text-xs text-slate-500 pt-3">
             Đã có tài khoản?{' '}
             <Link
               href={

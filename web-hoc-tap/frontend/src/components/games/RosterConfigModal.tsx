@@ -340,7 +340,7 @@ export const RosterConfigModal: React.FC<RosterConfigModalProps> = ({
             <button
               type="button"
               onClick={() => setActiveTab('numbers')}
-              className={`flex-1 py-2 px-3 rounded-full text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+              className={`flex-1 py-2 px-3 rounded-full text-xs sm:text-sm font-medium flex items-center justify-center gap-2 transition-all cursor-pointer ${
                 activeTab === 'numbers'
                   ? 'bg-white dark:bg-[#2b2d30] text-google-blue dark:text-google-pill shadow-xs'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -353,7 +353,7 @@ export const RosterConfigModal: React.FC<RosterConfigModalProps> = ({
             <button
               type="button"
               onClick={() => setActiveTab('list')}
-              className={`flex-1 py-2 px-3 rounded-full text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+              className={`flex-1 py-2 px-3 rounded-full text-xs sm:text-sm font-medium flex items-center justify-center gap-2 transition-all cursor-pointer ${
                 activeTab === 'list'
                   ? 'bg-white dark:bg-[#2b2d30] text-google-blue dark:text-google-pill shadow-xs'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -477,9 +477,9 @@ export const RosterConfigModal: React.FC<RosterConfigModalProps> = ({
                   <button
                     type="button"
                     onClick={() => setNumberPrefix('none')}
-                    className={`py-2 px-3 rounded-2xl text-xs font-semibold border transition text-center cursor-pointer ${
+                    className={`py-2 px-3 rounded-2xl text-xs font-medium border transition text-center cursor-pointer ${
                       numberPrefix === 'none'
-                        ? 'bg-google-pill dark:bg-blue-950/60 text-google-pill-text dark:text-blue-200 border-google-blue font-bold shadow-2xs'
+                        ? 'bg-google-pill dark:bg-blue-950/60 text-google-pill-text dark:text-blue-200 border-google-blue shadow-2xs'
                         : 'bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-300 border-slate-200/60 dark:border-white/5 hover:bg-slate-200/60 dark:hover:bg-white/10'
                     }`}
                   >
@@ -488,9 +488,9 @@ export const RosterConfigModal: React.FC<RosterConfigModalProps> = ({
                   <button
                     type="button"
                     onClick={() => setNumberPrefix('so')}
-                    className={`py-2 px-3 rounded-2xl text-xs font-semibold border transition text-center cursor-pointer ${
+                    className={`py-2 px-3 rounded-2xl text-xs font-medium border transition text-center cursor-pointer ${
                       numberPrefix === 'so'
-                        ? 'bg-google-pill dark:bg-blue-950/60 text-google-pill-text dark:text-blue-200 border-google-blue font-bold shadow-2xs'
+                        ? 'bg-google-pill dark:bg-blue-950/60 text-google-pill-text dark:text-blue-200 border-google-blue shadow-2xs'
                         : 'bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-300 border-slate-200/60 dark:border-white/5 hover:bg-slate-200/60 dark:hover:bg-white/10'
                     }`}
                   >
@@ -499,9 +499,9 @@ export const RosterConfigModal: React.FC<RosterConfigModalProps> = ({
                   <button
                     type="button"
                     onClick={() => setNumberPrefix('vit')}
-                    className={`py-2 px-3 rounded-2xl text-xs font-semibold border transition text-center cursor-pointer ${
+                    className={`py-2 px-3 rounded-2xl text-xs font-medium border transition text-center cursor-pointer ${
                       numberPrefix === 'vit'
-                        ? 'bg-google-pill dark:bg-blue-950/60 text-google-pill-text dark:text-blue-200 border-google-blue font-bold shadow-2xs'
+                        ? 'bg-google-pill dark:bg-blue-950/60 text-google-pill-text dark:text-blue-200 border-google-blue shadow-2xs'
                         : 'bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-300 border-slate-200/60 dark:border-white/5 hover:bg-slate-200/60 dark:hover:bg-white/10'
                     }`}
                   >
@@ -594,7 +594,7 @@ export const RosterConfigModal: React.FC<RosterConfigModalProps> = ({
                   value={textInput}
                   onChange={(e) => setTextInput(e.target.value)}
                   placeholder="Nhập mỗi học sinh một dòng (ví dụ: Nguyễn Văn A)..."
-                  className="w-full p-3.5 rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.03] text-slate-900 dark:text-white text-xs sm:text-sm focus:border-google-blue focus:ring-2 focus:ring-google-blue/20 outline-none resize-none font-sans"
+                  className="w-full p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e1f20] text-slate-900 dark:text-white text-xs sm:text-sm focus:border-google-blue focus:ring-1 focus:ring-google-blue/20 outline-none resize-none font-sans"
                 />
               </div>
 

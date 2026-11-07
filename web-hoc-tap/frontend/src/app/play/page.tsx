@@ -31,12 +31,15 @@ import {
   UserX,
   LogOut,
   GraduationCap,
+  ArrowRight,
+  Sparkles,
 } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { checkUserInClass } from '@/lib/classesApi';
 import {
   getHomeworkByPin,
   submitHomework,
+  recordHomeworkParticipant,
   HomeworkItem,
   HomeworkViolationLog,
 } from '@/lib/homeworkApi';
@@ -229,6 +232,9 @@ function BlooketPlayContent() {
       setLobbyError('Vui lòng nhập Họ và tên để bắt đầu làm bài');
       return;
     }
+
+    // Ghi nhận người tham gia để giáo viên thấy ngay trên màn hình giao bài
+    recordHomeworkParticipant(homework.pin, studentName.trim(), user?.id, homework.id);
 
     // Chuẩn bị câu hỏi
     let qs = [...(homework.quizData?.questions || [])];
@@ -545,23 +551,21 @@ function BlooketPlayContent() {
   };
 
   // -------------------------------------------------------------
-  // RENDER PHASE: LOBBY (SYNCHRONIZED WITH WEB DESIGN SYSTEM)
+  // RENDER PHASE: LOBBY (SYNCHRONIZED WITH BLOOKET STYLE & SYSTEM)
   // -------------------------------------------------------------
   if (phase === 'lobby') {
     return (
-      <div className="min-h-screen bg-google-bg dark:bg-[#131314] text-slate-900 dark:text-slate-100 flex flex-col justify-between font-sans">
+      <div className="min-h-screen bg-slate-50 dark:bg-[#0c0f17] text-slate-900 dark:text-slate-100 flex flex-col font-sans">
         {/* Top Navbar */}
-        <header className="h-16 px-4 sm:px-6 flex items-center justify-between bg-white/80 dark:bg-[#18181b]/80 backdrop-blur-md">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-white dark:bg-[#1e1f20] flex items-center justify-center p-1.5 shrink-0 shadow-sm border border-slate-200/70 dark:border-[#2d2f31]">
-              <svg viewBox="0 0 24 24" width="20" height="20" className="w-full h-full block" style={{ maxWidth: '20px', maxHeight: '20px' }}>
-                <path fill="#4285F4" d="M12 2L2 19.7h8.4L12 16.2l3.6 3.5H22L12 2z" />
-                <path fill="#FBBC05" d="M2 19.7h8.4L15.6 12 12 2 2 19.7z" />
-                <path fill="#34A853" d="M12 16.2l3.6 3.5H22L17.2 12 12 16.2z" />
-                <path fill="#EA4335" d="M12 2l5.2 10 4.8 7.7L12 2z" />
-              </svg>
+        <header className="h-16 px-4 sm:px-6 flex items-center justify-between">
+          <div
+            onClick={() => router.push('/')}
+            className="cursor-pointer select-none flex items-center gap-2 group"
+          >
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 to-cyan-500 flex items-center justify-center text-white group-hover:scale-105 transition-transform">
+              <Sparkles size={16} />
             </div>
-            <span className="font-bold text-base sm:text-lg tracking-tight text-slate-900 dark:text-slate-100">
+            <span className="font-extrabold text-base tracking-tight text-slate-900 dark:text-white">
               KiyoEdu
             </span>
           </div>
@@ -571,18 +575,77 @@ function BlooketPlayContent() {
           </div>
         </header>
 
-        {/* Lobby Center Card */}
-        <main className="max-w-md w-full mx-auto px-4 py-8 my-auto">
-          <div className="bg-white dark:bg-[#1e1f20] rounded-3xl p-6 sm:p-8 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-6 text-center">
-            {homework ? (
-              <div className="space-y-4">
-                <div className="space-y-1.5">
-                  <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 break-words leading-snug">
-                    {homework.title}
-                  </h1>
-                </div>
+        {/* Center Section: Đúng kiểu ảnh 2 (Blooket), căn chính giữa màn hình */}
+        <main className="flex-1 flex flex-col items-center justify-center px-4 -mt-16 text-center">
+          {!homework ? (
+            /* Bước 1: Nhập Game ID / Mã PIN (Y hệt ảnh 2 - Logo KiyoEdu + Ô Game ID + Nút Mũi tên) */
+            <div className="w-full max-w-sm mx-auto flex flex-col items-center">
+              {/* Logo KiyoEdu to, đậm, bo góc tròn kiểu Blooket */}
+              <h1 className="text-5xl sm:text-6xl font-black tracking-tight text-slate-900 dark:text-white select-none mb-6">
+                KiyoEdu
+              </h1>
 
-                {/* Huy hiệu thông số: số câu, thời gian, lớp học, chống gian lận */}
+              {/* Ô nhập Game ID và Nút mũi tên cạnh nhau (Không có 'Họ và tên của bạn') */}
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const pin = pinInput.trim();
+                  if (!pin) return;
+                  if (pin.startsWith('KY-') || pin.length > 6) {
+                    router.push(`/classes/join?code=${encodeURIComponent(pin)}`);
+                  } else {
+                    handleLookupPin(pin);
+                  }
+                }}
+                className="flex items-center gap-2.5 sm:gap-3 w-full justify-center"
+              >
+                <input
+                  type="text"
+                  autoFocus
+                  value={pinInput}
+                  onChange={(e) => {
+                    const val = e.target.value.trim().toUpperCase();
+                    setPinInput(val);
+                    if (lobbyError) setLobbyError('');
+                  }}
+                  placeholder="Game ID"
+                  maxLength={10}
+                  className="flex-1 h-14 sm:h-16 px-5 bg-white dark:bg-[#1a1f2e] text-slate-900 dark:text-white border-2 border-slate-300 dark:border-slate-700 rounded-2xl font-bold text-xl sm:text-2xl text-center placeholder:text-slate-400 placeholder:font-bold focus:outline-none focus:border-blue-500 transition-all"
+                />
+
+                <button
+                  type="submit"
+                  disabled={loadingHw || !pinInput.trim()}
+                  className="h-14 sm:h-16 w-14 sm:w-16 rounded-2xl bg-white hover:bg-slate-100 dark:bg-[#1a1f2e] dark:hover:bg-[#252b3d] text-slate-700 dark:text-slate-200 border-2 border-slate-300 dark:border-slate-700 flex items-center justify-center cursor-pointer disabled:opacity-40 transition-all active:scale-95 shrink-0"
+                >
+                  {loadingHw ? (
+                    <Loader2 size={24} className="animate-spin text-blue-600 dark:text-cyan-400" />
+                  ) : (
+                    <ArrowRight size={26} className="stroke-[2.5]" />
+                  )}
+                </button>
+              </form>
+
+              {/* Thông báo lỗi nếu không tìm thấy PIN */}
+              {lobbyError && (
+                <div className="mt-4 p-3 bg-red-50 dark:bg-red-950/40 border border-red-300 dark:border-red-900 rounded-xl text-xs sm:text-sm text-red-600 dark:text-red-400 font-bold flex items-center justify-center gap-2 w-full animate-in fade-in">
+                  <AlertTriangle size={16} className="shrink-0 text-red-500" />
+                  <span>{lobbyError}</span>
+                </div>
+              )}
+            </div>
+          ) : (
+            /* Bước 2: Khi đã tìm thấy bài tập / phòng thi */
+            <div className="w-full max-w-md mx-auto bg-white dark:bg-[#1e1f20] rounded-3xl p-6 sm:p-8 border-2 border-slate-200 dark:border-slate-800 space-y-6 text-center animate-in fade-in">
+              <div className="space-y-2">
+                <span className="text-xs font-semibold text-blue-600 dark:text-cyan-400">
+                  {homework.className || 'Bài tập trực tuyến'}
+                </span>
+                <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white break-words">
+                  {homework.title}
+                </h2>
+                
+                {/* Thông số câu hỏi & thời gian */}
                 <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
                   {questionsCount > 0 && (
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
@@ -594,94 +657,19 @@ function BlooketPlayContent() {
                     <Clock size={13} className="text-amber-500" />
                     {homework.durationMinutes > 0 ? `${homework.durationMinutes} phút` : 'Tự do thời gian'}
                   </span>
-                  {homework.className && (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                      <GraduationCap size={13} className="text-emerald-500" />
-                      {homework.className}
-                    </span>
-                  )}
                 </div>
-
-                {/* Thông tin thí sinh tham gia */}
-                {studentName && (
-                  <div className="p-3.5 bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200/60 dark:border-blue-900/40 rounded-2xl flex items-center justify-between text-left">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="w-8 h-8 rounded-full bg-google-blue text-white flex items-center justify-center font-bold text-xs shrink-0">
-                        {studentName.trim().charAt(0).toUpperCase()}
-                      </div>
-                      <div className="min-w-0">
-                        <span className="text-[10px] text-blue-600 dark:text-blue-400 font-bold uppercase tracking-wider block">
-                          Thí sinh tham gia
-                        </span>
-                        <span className="font-semibold text-xs sm:text-sm text-slate-900 dark:text-slate-100 truncate block">
-                          {studentName}
-                        </span>
-                      </div>
-                    </div>
-                    {homework.className && (
-                      <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 shrink-0">
-                        {homework.className}
-                      </span>
-                    )}
-                  </div>
-                )}
               </div>
-            ) : (
-              <div className="space-y-1.5">
-                <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-                  Vào làm bài tập
-                </h2>
-              </div>
-            )}
 
-            {lobbyError && (
-              <div className="p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/60 rounded-2xl text-xs text-red-600 dark:text-red-400 flex items-center gap-2 text-left">
-                <AlertTriangle size={16} className="shrink-0 text-red-500" />
-                <span>{lobbyError}</span>
-              </div>
-            )}
-
-            <div className="space-y-4 text-left">
-              {/* PIN INPUT - Chỉ hiển thị khi chưa có thông tin bài tập */}
-              {!homework && (
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                    Mã PIN
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      maxLength={6}
-                      value={pinInput}
-                      onChange={(e) => {
-                        const val = e.target.value.replace(/\D/g, '');
-                        setPinInput(val);
-                        if (val.length === 6) handleLookupPin(val);
-                      }}
-                      placeholder="VD: 829143"
-                      className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-center font-mono text-2xl font-bold tracking-widest text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-google-blue"
-                    />
-                    {loadingHw && (
-                      <div className="absolute right-3.5 top-3.5">
-                        <Loader2 size={20} className="animate-spin text-google-blue" />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* CHECK QUYỀN TRUY CẬP: TỰ DO vs BẮT BUỘC ĐÚNG TÀI KHOẢN LỚP */}
-              {homework && homework.classId && homework.classId !== 'public' ? (
-                /* BÀI TẬP CỦA LỚP HỌC */
+              {/* Phân quyền lớp học */}
+              {homework.classId && homework.classId !== 'public' ? (
                 classCheckStatus === 'checking' ? (
-                  <div className="p-4 text-center space-y-2 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800">
-                    <Loader2 size={20} className="animate-spin text-google-blue mx-auto" />
-                    <p className="text-xs text-slate-500 font-medium">Đang kiểm tra tài khoản lớp học</p>
+                  <div className="p-4 text-center space-y-2 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
+                    <Loader2 size={20} className="animate-spin text-blue-600 mx-auto" />
+                    <p className="text-xs text-slate-500 font-medium">Đang kiểm tra tài khoản lớp học...</p>
                   </div>
                 ) : classCheckStatus === 'not_logged_in' ? (
-                  /* 1. CHƯA ĐĂNG NHẬP */
-                  <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-900/60 space-y-3 text-center animate-in fade-in">
-                    <div className="w-9 h-9 rounded-full bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300 flex items-center justify-center mx-auto">
+                  <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 space-y-3 text-center">
+                    <div className="w-9 h-9 rounded-full bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300 flex items-center justify-center mx-auto">
                       <Lock size={18} />
                     </div>
                     <div className="space-y-1">
@@ -698,16 +686,15 @@ function BlooketPlayContent() {
                         const currentPath = typeof window !== 'undefined' ? (window.location.pathname + window.location.search) : `/play?pin=${homework.pin}`;
                         router.push(`/login?redirect=${encodeURIComponent(currentPath)}`);
                       }}
-                      className="w-full py-2.5 rounded-xl bg-google-blue hover:bg-[#1557b0] text-white font-bold text-xs gap-1.5 justify-center shadow-xs"
+                      className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs gap-1.5 justify-center"
                     >
                       <LogIn size={14} />
                       Đăng nhập để vào làm bài
                     </Button>
                   </div>
                 ) : classCheckStatus === 'not_in_class' ? (
-                  /* 2. ĐÃ ĐĂNG NHẬP NHƯNG KHÔNG THUỘC LỚP */
-                  <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200/80 dark:border-rose-900/60 space-y-3 text-center animate-in fade-in">
-                    <div className="w-9 h-9 rounded-full bg-rose-100 dark:bg-rose-900/60 text-rose-700 dark:text-rose-300 flex items-center justify-center mx-auto">
+                  <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 space-y-3 text-center">
+                    <div className="w-9 h-9 rounded-full bg-rose-100 dark:bg-rose-900 text-rose-700 dark:text-rose-300 flex items-center justify-center mx-auto">
                       <UserX size={18} />
                     </div>
                     <div className="space-y-1">
@@ -725,53 +712,122 @@ function BlooketPlayContent() {
                         const currentPath = typeof window !== 'undefined' ? (window.location.pathname + window.location.search) : `/play?pin=${homework.pin}`;
                         router.push(`/login?redirect=${encodeURIComponent(currentPath)}`);
                       }}
-                      className="w-full py-2 rounded-xl text-xs gap-1.5 justify-center text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-800 hover:bg-rose-50 dark:hover:bg-rose-950/50"
+                      className="w-full py-2 rounded-xl text-xs gap-1.5 justify-center text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-800"
                     >
                       <LogOut size={13} />
                       Đổi tài khoản khác
                     </Button>
                   </div>
                 ) : (
-                  /* 3. ĐÃ XÁC THỰC THÀNH CÔNG VÀO LỚP */
-                  <Button
-                    variant="primary"
-                    onClick={handleStartExamFlow}
-                    disabled={loadingHw || !studentName.trim()}
-                    className="w-full py-3.5 rounded-2xl bg-google-blue hover:bg-[#1557b0] active:bg-[#174ea6] text-white font-bold text-sm shadow-sm transition-all"
-                  >
-                    VÀO LÀM BÀI NGAY
-                  </Button>
+                  <div className="space-y-4">
+                    {studentName && (
+                      <div className="p-3 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 rounded-2xl flex items-center gap-2.5 text-left">
+                        <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0">
+                          {studentName.trim().charAt(0).toUpperCase()}
+                        </div>
+                        <div className="min-w-0">
+                          <span className="text-[10px] text-blue-600 dark:text-blue-400 font-medium block">
+                            Thí sinh tham gia
+                          </span>
+                          <span className="font-semibold text-xs sm:text-sm text-slate-900 dark:text-slate-100 truncate block">
+                            {studentName}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                    <Button
+                      variant="primary"
+                      onClick={handleStartExamFlow}
+                      disabled={loadingHw || !studentName.trim()}
+                      className="w-full py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm transition-all"
+                    >
+                      Vào làm bài ngay
+                    </Button>
+                  </div>
                 )
               ) : (
-                /* BÀI TẬP TỰ DO: BẤT CỨ AI CŨNG VÀO ĐƯỢC */
-                <>
-                  {!studentName && (
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                        Họ và tên của bạn
-                      </label>
-                      <Input
+                /* Bài tập tự do công khai */
+                <div className="space-y-4">
+                  {studentName ? (
+                    <div className="space-y-3">
+                      <div className="p-3 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 rounded-2xl flex items-center justify-between text-left">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0">
+                            {studentName.trim().charAt(0).toUpperCase()}
+                          </div>
+                          <div className="min-w-0">
+                            <span className="text-[10px] text-blue-600 dark:text-blue-400 font-medium block">
+                              Thí sinh
+                            </span>
+                            <span className="font-semibold text-xs sm:text-sm text-slate-900 dark:text-slate-100 truncate block">
+                              {studentName}
+                            </span>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setStudentName('')}
+                          className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold"
+                        >
+                          Đổi
+                        </button>
+                      </div>
+
+                      <Button
+                        variant="primary"
+                        onClick={handleStartExamFlow}
+                        disabled={loadingHw || !studentName.trim()}
+                        className="w-full py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm transition-all"
+                      >
+                        VÀO LÀM BÀI NGAY
+                      </Button>
+                    </div>
+                  ) : (
+                    /* Nhập Nickname kiểu Blooket */
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        if (studentName.trim()) handleStartExamFlow();
+                      }}
+                      className="flex items-center gap-2.5 w-full"
+                    >
+                      <input
                         type="text"
+                        autoFocus
                         value={studentName}
                         onChange={(e) => setStudentName(e.target.value)}
-                        placeholder="Nhập họ và tên"
-                        className="rounded-2xl text-sm"
+                        placeholder="Nhập tên của bạn"
+                        maxLength={25}
+                        className="flex-1 h-14 px-4 bg-white dark:bg-[#1a1f2e] text-slate-900 dark:text-white border-2 border-slate-300 dark:border-slate-700 rounded-2xl font-bold text-base text-center placeholder:text-slate-400 focus:outline-none focus:border-blue-500 transition-all"
                       />
-                    </div>
+                      <button
+                        type="submit"
+                        disabled={!studentName.trim()}
+                        className="h-14 w-14 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center cursor-pointer disabled:opacity-40 transition-all active:scale-95 shrink-0"
+                      >
+                        <ArrowRight size={22} className="stroke-[2.5]" />
+                      </button>
+                    </form>
                   )}
-
-                  <Button
-                    variant="primary"
-                    onClick={handleStartExamFlow}
-                    disabled={loadingHw || !studentName.trim()}
-                    className="w-full py-3.5 rounded-2xl bg-google-blue hover:bg-[#1557b0] active:bg-[#174ea6] text-white font-bold text-sm shadow-sm transition-all"
-                  >
-                    VÀO LÀM BÀI NGAY
-                  </Button>
-                </>
+                </div>
               )}
+
+              {/* Nút quay lại đổi PIN khác */}
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setHomework(null);
+                    setPinInput('');
+                    setLobbyError('');
+                  }}
+                  className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 font-semibold cursor-pointer underline"
+                >
+                  ← Đổi mã PIN khác
+                </button>
+              </div>
             </div>
-          </div>
+          )}
         </main>
       </div>
     );
@@ -895,7 +951,7 @@ function BlooketPlayContent() {
 
             {/* Score Display */}
             <div className="p-6 bg-slate-50 dark:bg-slate-900/60 rounded-2xl border border-slate-200/60 dark:border-slate-800 space-y-1">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
                 Điểm số đạt được
               </span>
               <div className="text-5xl font-black text-google-blue font-mono">
@@ -986,7 +1042,7 @@ function BlooketPlayContent() {
               <AlertTriangle size={30} />
             </div>
             <div className="space-y-1.5">
-              <h3 className="text-base font-bold text-red-600 dark:text-red-400 uppercase tracking-tight">
+              <h3 className="text-base font-semibold text-red-600 dark:text-red-400">
                 Cảnh báo vi phạm quy chế
               </h3>
               <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
@@ -1179,7 +1235,7 @@ function BlooketPlayContent() {
             <div className="space-y-6">
               {/* Question Header */}
               <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
-                <span className="text-xs sm:text-sm font-bold text-google-blue uppercase tracking-wider">
+                <span className="text-xs sm:text-sm font-semibold text-google-blue">
                   Câu {currentIndex + 1} / {totalQ}
                 </span>
                 <span className="text-xs sm:text-sm font-semibold text-slate-400">
@@ -1208,10 +1264,10 @@ function BlooketPlayContent() {
                         key={optIdx}
                         type="button"
                         onClick={() => handleSelectOption(currentQ.id, optContent)}
-                        className={`p-5 sm:p-6 lg:p-7 rounded-2xl border text-left flex items-start gap-4 transition-all select-none cursor-pointer ${
+                        className={`p-5 sm:p-6 lg:p-7 rounded-2xl border text-left flex items-start gap-4 transition-all select-none cursor-pointer font-medium ${
                           isSelected
-                            ? 'bg-blue-50/90 dark:bg-blue-950/50 border-google-blue text-slate-900 dark:text-slate-100 font-bold shadow-sm ring-2 ring-google-blue'
-                            : 'bg-slate-50/70 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
+                            ? 'bg-blue-50/90 dark:bg-blue-950/50 border-google-blue text-slate-900 dark:text-slate-100 shadow-sm ring-2 ring-google-blue'
+                            : 'bg-white dark:bg-slate-800/40 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
                         }`}
                       >
                         <span

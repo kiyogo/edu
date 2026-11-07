@@ -2,6 +2,29 @@ import { safeLocalStorageGet, safeLocalStorageSet, safeLocalStorageRemove } from
 import { idbGetDocument } from './indexedDbStorage';
 import { getStoredUser } from '@/store/useAuthStore';
 
+/**
+ * Helper gọi fetch với timeout nhanh, không bao giờ để UI bị block/delay khi server chậm hoặc offline
+ */
+export async function fetchWithTimeout(
+  input: RequestInfo | URL,
+  init?: RequestInit,
+  timeoutMs = 1200
+): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(input, {
+      ...init,
+      signal: init?.signal || controller.signal,
+    });
+    clearTimeout(timer);
+    return res;
+  } catch (err) {
+    clearTimeout(timer);
+    throw err;
+  }
+}
+
 export interface ClassItem {
   id: string;
   name: string;
@@ -407,25 +430,27 @@ export function isDummySubmission(s: any): boolean {
 
 export async function fetchClassDetail(token: string | null, classId: string): Promise<ClassItem> {
   let detail: ClassItem | null = null;
-  try {
-    const res = await fetch(`/api/classes/${classId}`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    });
-    if (res.ok) {
-      detail = await res.json();
-    }
-  } catch (_) {}
+  // 1. Kiểm tra local classes trước tiên
+  const local = getLocalClasses();
+  const cleanClassId = classId.replace(/_/g, '');
+  detail = local.find(
+    (c) =>
+      c.id === classId ||
+      c.id === cleanClassId ||
+      c.id.replace(/_/g, '') === cleanClassId ||
+      c.code === classId
+  ) || null;
 
+  // 2. Nếu chưa có, gọi server với timeout 1.2s
   if (!detail) {
-    const local = getLocalClasses();
-    const cleanClassId = classId.replace(/_/g, '');
-    detail = local.find(
-      (c) =>
-        c.id === classId ||
-        c.id === cleanClassId ||
-        c.id.replace(/_/g, '') === cleanClassId ||
-        c.code === classId
-    ) || null;
+    try {
+      const res = await fetchWithTimeout(`/api/classes/${classId}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      }, 1200);
+      if (res.ok) {
+        detail = await res.json();
+      }
+    } catch (_) {}
   }
 
   if (!detail) {
@@ -433,7 +458,6 @@ export async function fetchClassDetail(token: string | null, classId: string): P
   }
 
   // Sync member count from members storage
-  const cleanClassId = classId.replace(/_/g, '');
   const memKey = `app_class_members_${cleanClassId}`;
   const rawMems = safeLocalStorageGet(memKey) || safeLocalStorageGet(`app_class_members_${classId}`);
   if (rawMems) {
@@ -451,9 +475,9 @@ export async function fetchClassDetail(token: string | null, classId: string): P
 export async function fetchClassAssignments(token: string | null, classId: string): Promise<any[]> {
   let list: any[] = [];
   try {
-    const res = await fetch(`/api/assignments/class/${classId}`, {
+    const res = await fetchWithTimeout(`/api/assignments/class/${classId}`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
-    });
+    }, 1200);
     if (res.ok) {
       const data = await res.json();
       if (Array.isArray(data)) {
@@ -522,9 +546,9 @@ export async function fetchClassAssignments(token: string | null, classId: strin
 export async function fetchClassMembers(token: string | null, classId: string): Promise<any[]> {
   let serverMems: any[] = [];
   try {
-    const res = await fetch(`/api/classes/${classId}/members`, {
+    const res = await fetchWithTimeout(`/api/classes/${classId}/members`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
-    });
+    }, 1200);
     if (res.ok) {
       const data = await res.json();
       if (Array.isArray(data)) {
@@ -594,25 +618,14 @@ export const DEFAULT_ASSIGNMENT_DETAILS: Record<string, any> = {};
 export async function fetchAssignmentDetail(token: string | null, assignmentId: string): Promise<any> {
   let found: any = null;
 
-  try {
-    const res = await fetch(`/api/assignments/${assignmentId}`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    });
-    if (res.ok) {
-      const data = await res.json();
-      if (data && !isDummyAssignment(data)) found = data;
-    }
-  } catch (_) {}
-
-  if (!found) {
-    const localAssignmentsKey = 'app_custom_assignments';
-    const rawLocal = safeLocalStorageGet(localAssignmentsKey);
-    if (rawLocal) {
-      try {
-        const parsed: any[] = JSON.parse(rawLocal);
-        found = parsed.find((a) => a.id === assignmentId && !isDummyAssignment(a));
-      } catch (_) {}
-    }
+  // 1. Kiểm tra nhanh trong LocalStorage / IndexedDB trước tiên (0ms delay)
+  const localAssignmentsKey = 'app_custom_assignments';
+  const rawLocal = safeLocalStorageGet(localAssignmentsKey);
+  if (rawLocal) {
+    try {
+      const parsed: any[] = JSON.parse(rawLocal);
+      found = parsed.find((a) => a.id === assignmentId && !isDummyAssignment(a));
+    } catch (_) {}
   }
 
   // Also check inside all class assignments lists
@@ -686,6 +699,19 @@ export async function fetchAssignmentDetail(token: string | null, assignmentId: 
             };
           }
         }
+      }
+    } catch (_) {}
+  }
+
+  // 2. Nếu chưa có trong local, fallback gọi server với timeout nhanh 1.2s (không block UI)
+  if (!found) {
+    try {
+      const res = await fetchWithTimeout(`/api/assignments/${assignmentId}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      }, 1200);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && !isDummyAssignment(data)) found = data;
       }
     } catch (_) {}
   }
@@ -812,9 +838,9 @@ export async function fetchAssignmentDetail(token: string | null, assignmentId: 
 export async function fetchAssignmentSubmissions(token: string | null, assignmentId: string): Promise<any[]> {
   let subs: any[] = [];
   try {
-    const res = await fetch(`/api/assignments/${assignmentId}/submissions`, {
+    const res = await fetchWithTimeout(`/api/assignments/${assignmentId}/submissions`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
-    });
+    }, 1200);
     if (res.ok) {
       const data = await res.json();
       if (Array.isArray(data)) {
@@ -948,13 +974,8 @@ export async function fetchAssignmentSubmissions(token: string | null, assignmen
 
 export async function fetchMyAssignmentSubmission(token: string | null, assignmentId: string): Promise<any | null> {
   const cleanAssignmentId = assignmentId.replace(/_/g, '');
-  try {
-    const res = await fetch(`/api/assignments/${assignmentId}/submission/me`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    });
-    if (res.ok) return await res.json();
-  } catch (_) {}
 
+  // 1. Kiểm tra nhanh localStorage để có kết quả ngay 0ms
   const storageKey = `app_my_assignment_sub_${cleanAssignmentId}`;
   const raw = safeLocalStorageGet(storageKey) || safeLocalStorageGet(`app_my_assignment_sub_${assignmentId}`);
   if (raw) {
@@ -962,6 +983,14 @@ export async function fetchMyAssignmentSubmission(token: string | null, assignme
       return JSON.parse(raw);
     } catch (_) {}
   }
+
+  // 2. Thử gọi server với timeout 1.2s nếu chưa có
+  try {
+    const res = await fetchWithTimeout(`/api/assignments/${assignmentId}/submission/me`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    }, 1200);
+    if (res.ok) return await res.json();
+  } catch (_) {}
 
   // Fallback: Tìm trong danh sách nộp bài nếu học sinh nộp qua phòng thi /play
   try {
@@ -1117,46 +1146,45 @@ export async function gradeAssignmentSubmission(
   score: number,
   feedback: string
 ): Promise<boolean> {
+  const cleanAssignmentId = assignmentId.replace(/_/g, '');
+  const storageKeys = [
+    `app_assignment_subs_${cleanAssignmentId}`,
+    `app_assignment_subs_${assignmentId}`,
+    `app_homework_subs_${cleanAssignmentId}`,
+    `app_homework_subs_${assignmentId}`,
+  ];
+
+  // 1. Cập nhật ngay lập tức vào localStorage để đồng bộ 0ms
+  storageKeys.forEach((key) => {
+    const raw = safeLocalStorageGet(key);
+    if (raw) {
+      try {
+        const subs: any[] = JSON.parse(raw);
+        if (Array.isArray(subs)) {
+          const target = subs.find((s) => s.id === submissionId);
+          if (target) {
+            target.status = 'GRADED';
+            target.score = score;
+            target.feedback = feedback;
+            safeLocalStorageSet(key, JSON.stringify(subs));
+          }
+        }
+      } catch (_) {}
+    }
+  });
+
+  // 2. Gửi bất đồng bộ lên server với timeout 1.2s, không block luồng xử lý
   try {
-    const res = await fetch(`/api/assignments/submissions/${submissionId}/grade`, {
+    const res = await fetchWithTimeout(`/api/assignments/submissions/${submissionId}/grade`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       body: JSON.stringify({ score, feedback }),
-    });
+    }, 1200);
     if (res.ok) return true;
   } catch (_) {}
-
-  const storageKey = `app_assignment_subs_${assignmentId}`;
-  const raw = safeLocalStorageGet(storageKey);
-  if (raw) {
-    try {
-      const subs: any[] = JSON.parse(raw);
-      const target = subs.find((s) => s.id === submissionId);
-      if (target) {
-        target.status = 'GRADED';
-        target.score = score;
-        target.feedback = feedback;
-        safeLocalStorageSet(storageKey, JSON.stringify(subs));
-      }
-    } catch (_) {}
-  }
-
-  // Cập nhật cả bên app_homework_subs_${assignmentId}
-  const hwSubsKey = `app_homework_subs_${assignmentId}`;
-  const rawHw = safeLocalStorageGet(hwSubsKey);
-  if (rawHw) {
-    try {
-      const hwSubs: any[] = JSON.parse(rawHw);
-      const targetHw = hwSubs.find((s) => s.id === submissionId);
-      if (targetHw) {
-        targetHw.score = score;
-        safeLocalStorageSet(hwSubsKey, JSON.stringify(hwSubs));
-      }
-    } catch (_) {}
-  }
 
   return true;
 }

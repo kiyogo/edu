@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, Suspense } from 'react';
+import React, { useState, useEffect, useMemo, useRef, Suspense } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { AppShell } from '@/components/AppShell';
 import { BreadcrumbChevron } from '@/components/BreadcrumbChevron';
 import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
 import { Badge } from '@/components/Badge';
+import { Modal } from '@/components/Modal';
 import {
   Send,
   Shield,
@@ -34,7 +35,12 @@ import {
 } from 'lucide-react';
 import DateTimePicker, { formatDateTimeToInputValue } from '@/components/DateTimePicker';
 import { CustomSelect } from '@/components/Select';
-import { createHomework, HomeworkItem } from '@/lib/homeworkApi';
+import {
+  createHomework,
+  getHomeworkByPin,
+  getHomeworkParticipants,
+  HomeworkItem,
+} from '@/lib/homeworkApi';
 import { getLocalClasses, ClassItem, createClassAssignment } from '@/lib/classesApi';
 import { getDocumentFile } from '@/lib/documentsApi';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -276,6 +282,9 @@ function AssignPageContent() {
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
   const [copiedPin, setCopiedPin] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [participants, setParticipants] = useState<any[]>([]);
+  const [isQrZoomOpen, setIsQrZoomOpen] = useState(false);
+  const hasCheckedInitialHwRef = useRef(false);
 
   // Load document and classes
   useEffect(() => {
@@ -381,6 +390,56 @@ function AssignPageContent() {
         .catch((err) => console.error('Lỗi sinh mã QR:', err));
     }
   }, [createdHomework]);
+
+  // Chỉ kiểm tra bài tập khi có tham số ?pin= trên URL (tránh tự động chuyển giao diện ngoài ý muốn)
+  useEffect(() => {
+    if (!fileId || hasCheckedInitialHwRef.current) return;
+    hasCheckedInitialHwRef.current = true;
+
+    const queryPin = searchParams && typeof searchParams.get === 'function' ? searchParams.get('pin') : null;
+    if (queryPin) {
+      getHomeworkByPin(queryPin).then((hw) => {
+        if (hw) setCreatedHomework(hw);
+      });
+    }
+  }, [fileId, searchParams]);
+
+  // Tự động cập nhật danh sách người tham gia theo thời gian thực (chỉ render lại khi có thay đổi)
+  useEffect(() => {
+    if (!createdHomework?.pin) return;
+
+    let isMounted = true;
+    const fetchParticipants = async () => {
+      try {
+        const list = await getHomeworkParticipants(createdHomework.pin);
+        if (isMounted) {
+          setParticipants((prev) => {
+            if (prev.length === list.length) {
+              const isSame = prev.every(
+                (p, i) =>
+                  p.id === list[i]?.id &&
+                  p.studentName === list[i]?.studentName &&
+                  p.status === list[i]?.status &&
+                  p.score === list[i]?.score
+              );
+              if (isSame) return prev;
+            }
+            return list;
+          });
+        }
+      } catch (err) {
+        console.warn('Lỗi cập nhật người tham gia:', err);
+      }
+    };
+
+    fetchParticipants();
+    const interval = setInterval(fetchParticipants, 3000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [createdHomework?.pin]);
 
   const getPlayUrl = (pin: string) => {
     if (typeof window !== 'undefined') {
@@ -502,6 +561,13 @@ function AssignPageContent() {
       }
 
       setCreatedHomework(hw);
+      if (typeof window !== 'undefined' && hw?.pin) {
+        try {
+          const url = new URL(window.location.href);
+          url.searchParams.set('pin', hw.pin.replace(/\s+/g, ''));
+          window.history.replaceState(null, '', url.toString());
+        } catch (_) {}
+      }
     } catch (err) {
       console.error('Error creating homework:', err);
     } finally {
@@ -694,176 +760,199 @@ function AssignPageContent() {
     >
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 pt-2 space-y-8">
         {createdHomework ? (
-          /* TRANG THÀNH CÔNG: TÙY THEO HÌNH THỨC GIAO BÀI */
-          <div className="space-y-4 animate-in fade-in duration-300 max-w-md mx-auto">
-            {(!createdHomework.classId || createdHomework.classId === 'public') ? (
-              /* GIAO DIỆN CÔNG KHAI: ĐỒNG BỘ VỚI ASSIGNMENTS & CLASSES */
-              <>
-                {/* Header gọn gàng */}
-                <div className="text-center space-y-1">
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
-                    <Check size={14} className="stroke-[2.5]" />
-                    <span>Giao bài tập thành công</span>
-                  </div>
-                  <h1 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 px-2 break-words" title={createdHomework.title}>
-                    {createdHomework.title}
-                  </h1>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    {questionsCount} câu • {createdHomework.durationMinutes > 0 ? `${createdHomework.durationMinutes} phút` : 'Không giới hạn thời gian'}
-                  </p>
-                </div>
+          <div className="w-full max-w-5xl mx-auto space-y-8 pt-2">
 
-                <div className="space-y-4 pt-1 text-center">
-                  {/* PIN box - Đồng bộ với assignments & classes */}
-                  <div
-                    onClick={() => handleCopyPin(createdHomework.pin)}
-                    className="p-3.5 rounded-2xl bg-blue-50/90 dark:bg-blue-950/40 border border-blue-200/70 dark:border-blue-900/60 text-center cursor-pointer hover:bg-blue-100/70 dark:hover:bg-blue-900/40 transition-colors select-none"
-                    title="Bấm để sao chép mã PIN"
-                  >
-                    <span className="text-[10px] text-blue-600 dark:text-blue-400 font-bold uppercase tracking-wider block">
-                      Mã PIN làm bài
-                    </span>
-                    <div className="text-3xl sm:text-4xl font-mono font-black text-blue-700 dark:text-blue-300 tracking-widest mt-0.5">
-                      {displayPin}
-                    </div>
-                    {copiedPin && (
-                      <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 mt-1 inline-block animate-pulse">
-                        ✓ Đã sao chép mã PIN
-                      </span>
-                    )}
-                  </div>
-
-                  {/* QR Code */}
-                  {qrCodeUrl ? (
-                    <div className="p-4 bg-white rounded-3xl inline-block mx-auto">
-                      <img src={qrCodeUrl} alt="Mã QR làm bài" className="w-56 h-56 mx-auto object-contain" />
-                    </div>
-                  ) : (
-                    <div className="w-56 h-56 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto text-xs text-slate-400">
-                      Đang tạo mã QR
-                    </div>
-                  )}
-
-                  {/* Link box */}
-                  <div className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/70 dark:border-white/10">
-                    <div className="text-left truncate mr-2">
-                      <span className="text-[10px] text-slate-400 font-semibold uppercase block">
-                        Đường dẫn trực tiếp
-                      </span>
-                      <div className="text-xs text-slate-600 dark:text-zinc-300 font-medium truncate">
-                        {playUrl}
-                      </div>
-                    </div>
-                    <Button variant="secondary" size="sm" onClick={() => handleCopyLink()} className="gap-1 shrink-0 rounded-xl">
-                      {copiedLink ? <Check size={14} /> : <Copy size={14} />}
-                      <span>{copiedLink ? 'Đã chép' : 'Chép link'}</span>
-                    </Button>
-                  </div>
-
-                  {/* Action buttons */}
-                  <div className="flex items-center justify-center gap-2 pt-1 flex-wrap">
-                    {qrCodeUrl && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleDownloadQr}
-                        className="rounded-xl text-xs gap-1.5"
-                        title="Tải ảnh QR về máy để in hoặc chia sẻ"
-                      >
-                        <Download size={14} />
-                        <span>Tải ảnh QR về máy</span>
-                      </Button>
-                    )}
-
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => router.push(`/app/assignments/${createdHomework.id}`)}
-                      className="rounded-xl text-xs gap-1.5"
-                    >
-                      <span>Xem kết quả bài nộp</span>
-                    </Button>
-
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      onClick={() => window.open(playUrl, '_blank')}
-                      className="rounded-xl text-xs gap-1.5 bg-google-blue hover:bg-[#1557b0] text-white"
-                    >
-                      <ExternalLink size={14} />
-                      <span>Mở làm thử ngay</span>
-                    </Button>
+            {/* Hàng trên: QR | Hướng dẫn + PIN | Sao chép link */}
+            <div className="flex flex-col sm:flex-row items-center gap-6">
+              {qrCodeUrl && (
+                <div
+                  onClick={() => setIsQrZoomOpen(true)}
+                  className="shrink-0 cursor-pointer"
+                  title="Bấm để phóng to mã QR"
+                >
+                  <div className="w-20 h-20 bg-white rounded-xl p-1.5 shadow">
+                    <img src={qrCodeUrl} alt="Mã QR làm bài" className="w-full h-full object-contain" />
                   </div>
                 </div>
-              </>
-            ) : (
-              /* GIAO DIỆN GIAO CHO LỚP: GỌN GÀNG */
-              <>
-                <div className="text-center space-y-1">
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
-                    <Check size={14} className="stroke-[2.5]" />
-                    <span>Đã giao cho lớp {createdHomework.className}</span>
-                  </div>
-                  <h1 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 px-2 break-words" title={createdHomework.title}>
-                    {createdHomework.title}
-                  </h1>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    {questionsCount} câu • {createdHomework.durationMinutes > 0 ? `${createdHomework.durationMinutes} phút` : 'Không giới hạn thời gian'}
-                  </p>
+              )}
+
+              <div className="flex-1 flex flex-col sm:flex-row sm:items-center gap-4 min-w-0">
+                <div className="text-slate-600 dark:text-slate-400 text-sm leading-snug shrink-0">
+                  Vào <span className="font-semibold text-slate-900 dark:text-slate-100">
+                    {typeof window !== 'undefined' ? window.location.host : 'edu.app'}
+                  </span> và nhập mã pin:
                 </div>
-
-                <div className="p-5 bg-slate-50/80 dark:bg-slate-900/60 rounded-2xl border border-emerald-200/60 dark:border-emerald-900/40 text-center space-y-3 shadow-2xs">
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 text-xs font-bold">
-                    <Lock size={12} />
-                    <span>Bảo mật lớp học</span>
-                  </div>
-
-                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed max-w-sm mx-auto">
-                    Học sinh trong lớp chỉ cần đăng nhập tài khoản là có thể làm bài ngay từ danh sách lớp.
-                  </p>
-
-                  <div className="pt-0.5 flex items-center justify-center gap-2 flex-wrap">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleCopyLink()}
-                      className="gap-1.5 text-xs rounded-xl"
-                    >
-                      {copiedLink ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
-                      {copiedLink ? 'Đã chép' : 'Chép link'}
-                    </Button>
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      onClick={() => router.push(`/app/classes/${createdHomework.classId}`)}
-                      className="gap-1.5 text-xs rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
-                    >
-                      <ArrowLeft size={14} /> Về trang lớp
-                    </Button>
-                  </div>
+                <div
+                  onClick={() => handleCopyPin(createdHomework.pin)}
+                  className="cursor-pointer select-none"
+                  title="Bấm để sao chép mã pin"
+                >
+                  <span className="text-5xl sm:text-6xl font-black text-slate-900 dark:text-slate-100 tracking-[0.15em] font-mono">
+                    {displayPin}
+                  </span>
+                  <span className="block text-[11px] text-slate-400 text-center mt-0.5">
+                    {copiedPin ? '✓ Đã sao chép' : 'Bấm để sao chép'}
+                  </span>
                 </div>
+              </div>
 
-                <div className="flex items-center justify-center gap-2 pt-1 flex-wrap">
+              <div className="shrink-0">
+                <button
+                  onClick={() => handleCopyLink()}
+                  className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
+                >
+                  {copiedLink ? <Check size={13} /> : <Copy size={13} />}
+                  <span>{copiedLink ? 'Đã sao chép' : 'Sao chép link'}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Hàng: số người | Tiêu đề + Meta | Nút */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              {/* Số người tham gia */}
+              <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400 shrink-0">
+                <Users size={18} className="text-google-blue" />
+                <span className="text-base font-bold text-slate-900 dark:text-slate-100">{participants.length}</span>
+                <span className="text-sm">người tham gia</span>
+                <span className="ml-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 font-medium">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                  Trực tiếp
+                </span>
+              </div>
+
+              {/* Tiêu đề & Thông tin bài tập (ở giữa) */}
+              <div className="flex-1 text-center min-w-0 px-2 space-y-0.5">
+                <h1 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100 truncate" title={createdHomework.title}>
+                  {createdHomework.title}
+                </h1>
+                <p className="text-xs text-slate-400 dark:text-slate-500 truncate">
+                  {questionsCount} câu &bull; {createdHomework.durationMinutes > 0 ? `${createdHomework.durationMinutes} phút` : 'Không giới hạn'}
+                  {createdHomework.className && createdHomework.className !== 'Toàn trường / Công khai' ? ` • ${createdHomework.className}` : ''}
+                </p>
+              </div>
+
+              {/* Nút hành động */}
+              <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => window.open(playUrl, '_blank')}
+                  className="rounded-xl text-xs gap-1.5 bg-google-blue hover:bg-[#1557b0] text-white font-semibold shadow-sm"
+                >
+                  <ExternalLink size={13} />
+                  <span>Mở làm thử</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => router.push(`/app/assignments/${createdHomework.id}`)}
+                  className="rounded-xl text-xs gap-1.5 font-normal"
+                >
+                  <span>Xem kết quả</span>
+                </Button>
+                {qrCodeUrl && (
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => router.push(`/app/assignments/${createdHomework.id}`)}
-                    className="rounded-xl text-xs gap-1.5"
+                    onClick={handleDownloadQr}
+                    className="rounded-xl text-xs gap-1.5 font-normal"
+                    title="Tải ảnh QR về máy"
                   >
-                    <span>Xem kết quả bài nộp</span>
+                    <Download size={13} />
                   </Button>
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={() => window.open(playUrl, '_blank')}
-                    className="rounded-xl text-xs gap-1.5 bg-google-blue hover:bg-[#1557b0] text-white"
-                  >
-                    <ExternalLink size={14} />
-                    <span>Mở làm thử ngay</span>
+                )}
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    setCreatedHomework(null);
+                    if (typeof window !== 'undefined') {
+                      try {
+                        const url = new URL(window.location.href);
+                        url.searchParams.delete('pin');
+                        window.history.replaceState(null, '', url.pathname + (url.search ? url.search : ''));
+                      } catch (_) {}
+                    }
+                  }}
+                  className="rounded-xl text-xs font-normal"
+                >
+                  <span>Giao đợt mới</span>
+                </Button>
+              </div>
+            </div>
+
+            {/* Danh sách người tham gia */}
+            {participants.length === 0 ? (
+              <div className="py-12 text-center space-y-2">
+                  <Users size={44} className="mx-auto text-slate-200 dark:text-slate-700 stroke-[1.2]" />
+                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Chưa có người tham gia</p>
+                  <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                    Chia sẻ mã pin hoặc liên kết để học sinh bắt đầu vào phòng thi.
+                  </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                  {participants.map((p, idx) => {
+                    const initial = (p.studentName || '?').trim().charAt(0).toUpperCase();
+                    const isSubmitted = p.status === 'submitted' || p.score !== undefined;
+                    return (
+                      <div
+                        key={p.id || idx}
+                        className="flex items-center gap-2.5 px-3 py-2.5 bg-slate-50 dark:bg-slate-800/50 rounded-2xl"
+                      >
+                        <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-500 to-indigo-600 text-white flex items-center justify-center font-bold text-sm shrink-0">
+                          {initial}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <span
+                            className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate block"
+                            title={p.studentName}
+                          >
+                            {p.studentName}
+                          </span>
+                          {isSubmitted ? (
+                            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
+                              {p.score !== undefined ? `${p.score} điểm` : 'Đã nộp'}
+                            </span>
+                          ) : (
+                            <span className="text-[10px] text-amber-600 dark:text-amber-400 font-medium">
+                              Đang làm
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                })}
+              </div>
+            )}
+
+            {/* MODAL PHÓNG TO MÃ QR */}
+            <Modal
+              isOpen={isQrZoomOpen}
+              onClose={() => setIsQrZoomOpen(false)}
+              title="Mã QR làm bài"
+              maxWidth="md"
+            >
+              <div className="p-6 text-center space-y-4">
+                {qrCodeUrl ? (
+                  <div className="p-4 bg-white rounded-3xl inline-block mx-auto">
+                    <img src={qrCodeUrl} alt="Mã QR làm bài phóng to" className="w-72 h-72 mx-auto object-contain" />
+                  </div>
+                ) : null}
+                <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
+                  Học sinh quét mã QR bằng camera điện thoại để vào làm bài ngay lập tức.
+                </p>
+                <div className="flex items-center justify-center gap-3 pt-2">
+                  <Button variant="outline" size="sm" onClick={handleDownloadQr} className="rounded-xl text-xs gap-1.5 font-normal">
+                    <Download size={14} />
+                    <span>Tải ảnh QR về máy</span>
+                  </Button>
+                  <Button variant="secondary" size="sm" onClick={() => setIsQrZoomOpen(false)} className="rounded-xl text-xs font-normal">
+                    <span>Đóng</span>
                   </Button>
                 </div>
-              </>
-            )}
+              </div>
+            </Modal>
           </div>
         ) : (
           /* TRANG CẤU HÌNH GIAO BÀI TẬP (MỞ RỘNG HAI BÊN, KHÔNG KHUNG HỘP) */
@@ -1212,7 +1301,7 @@ function AssignPageContent() {
 
                     {/* Hàng 3: Các quy tắc giám sát chi tiết */}
                     <div className="pt-2 space-y-3">
-                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+                      <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block">
                         Các biện pháp giám sát được áp dụng
                       </span>
 

@@ -41,7 +41,7 @@ export const QuickJoinCard: React.FC = () => {
               maxLength={12}
               value={classCode}
               onChange={(e) => setClassCode(e.target.value.toUpperCase())}
-              className="w-full pl-10 pr-4 py-3.5 bg-google-input dark:bg-google-input-dark text-slate-900 dark:text-slate-100 rounded-2xl text-center font-mono font-bold text-base tracking-wider focus:ring-2 focus:ring-google-green focus:outline-none transition-all placeholder:font-sans placeholder:tracking-normal placeholder:text-sm"
+              className="w-full pl-10 pr-4 py-3.5 bg-white dark:bg-[#1e1f20] border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-2xl text-center font-mono font-bold text-base tracking-wider focus:ring-2 focus:ring-google-green focus:border-google-green focus:outline-none transition-all placeholder:font-sans placeholder:tracking-normal placeholder:text-sm"
               required
             />
           </div>
@@ -59,7 +59,7 @@ export const QuickJoinCard: React.FC = () => {
       </form>
 
       {/* Footer Note inside card */}
-      <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400">
+      <div className="mt-5 pt-4 flex items-center justify-between text-[11px] text-slate-400">
         <span className="inline-flex items-center gap-1 text-slate-500 dark:text-slate-400 font-medium">
           <BookOpen size={12} className="text-google-blue" /> Đồng bộ bài tập theo thời gian thực
         </span>

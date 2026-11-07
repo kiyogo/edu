@@ -128,9 +128,9 @@ export const RandomStudentModal: React.FC<RandomStudentModalProps> = ({
               setSelectedStudent(null);
               setDisplayNumber('?');
             }}
-            className={`flex-1 py-2 px-3 rounded-xl transition-all cursor-pointer ${
+            className={`flex-1 py-2 px-3 rounded-xl transition-all cursor-pointer font-medium ${
               mode === 'number'
-                ? 'bg-white dark:bg-[#25262b] text-google-blue dark:text-blue-400 shadow-xs font-bold'
+                ? 'bg-white dark:bg-[#25262b] text-google-blue dark:text-blue-400 shadow-xs'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
             }`}
           >
@@ -143,9 +143,9 @@ export const RandomStudentModal: React.FC<RandomStudentModalProps> = ({
               setSelectedStudent(null);
               setDisplayNumber('?');
             }}
-            className={`flex-1 py-2 px-3 rounded-xl transition-all cursor-pointer ${
+            className={`flex-1 py-2 px-3 rounded-xl transition-all cursor-pointer font-medium ${
               mode === 'name'
-                ? 'bg-white dark:bg-[#25262b] text-google-blue dark:text-blue-400 shadow-xs font-bold'
+                ? 'bg-white dark:bg-[#25262b] text-google-blue dark:text-blue-400 shadow-xs'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
             }`}
           >
@@ -164,7 +164,7 @@ export const RandomStudentModal: React.FC<RandomStudentModalProps> = ({
                 max={60}
                 value={totalStudents}
                 onChange={(e) => setTotalStudents(Math.max(2, Math.min(60, Number(e.target.value))))}
-                className="w-20 px-3 py-1.5 text-center font-black text-base rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-20 px-3 py-1.5 text-center font-black text-base rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e1f20] text-slate-900 dark:text-slate-100 focus:outline-none focus:border-google-blue focus:ring-1 focus:ring-google-blue/20"
               />
               <span className="text-slate-400 text-xs font-semibold">(1 - {totalStudents})</span>
             </div>
@@ -178,7 +178,7 @@ export const RandomStudentModal: React.FC<RandomStudentModalProps> = ({
               rows={3}
               value={namesText}
               onChange={(e) => setNamesText(e.target.value)}
-              className="w-full text-sm p-3 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full text-sm p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e1f20] text-slate-900 dark:text-slate-100 focus:outline-none focus:border-google-blue focus:ring-1 focus:ring-google-blue/20"
               placeholder="Nhập tên học sinh"
             />
           </div>

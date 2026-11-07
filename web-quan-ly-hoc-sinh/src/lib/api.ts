@@ -6,7 +6,7 @@ export const BACKEND_URL = API_URL.replace(/\/api$/, '');
 const api = axios.create({
   baseURL: API_URL,
   withCredentials: false,
-  timeout: 15000,
+  timeout: 5000,
 });
 
 // Interceptor to add token

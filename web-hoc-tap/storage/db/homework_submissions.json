@@ -1,0 +1,32 @@
+[
+  {
+    "id": "sub17934722664247205x",
+    "homeworkId": "hw17934722299223vp8p",
+    "pin": "439043",
+    "studentName": "Quản Trị Viên",
+    "studentId": "demo-admin-mvtrsmcp",
+    "status": "submitted",
+    "score": 0,
+    "correctCount": 0,
+    "totalQuestions": 1,
+    "timeSpentSeconds": 0,
+    "submittedAt": "2026-10-31T18:44:26.424Z",
+    "joinedAt": "2026-10-31T18:43:54.160Z",
+    "violationCount": 0,
+    "violationLogs": [],
+    "answers": {
+      "q_1": {
+        "selectedAnswer": "",
+        "isCorrect": false
+      }
+    }
+  },
+  {
+    "id": "part_1793374197952_1sxs",
+    "homeworkId": "371713",
+    "pin": "371713",
+    "studentName": "Nguyễn Văn A",
+    "status": "in_progress",
+    "joinedAt": "2026-10-30T15:29:57.952Z"
+  }
+]

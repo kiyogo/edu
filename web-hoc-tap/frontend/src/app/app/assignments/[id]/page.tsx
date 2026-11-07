@@ -394,9 +394,9 @@ export default function AssignmentDetailPage() {
     fetchData();
   }, [token, assignmentId]);
 
-  const fetchData = async () => {
+  const fetchData = async (silent = false) => {
     if (!assignmentId) return;
-    setLoading(true);
+    if (!silent) setLoading(true);
     try {
       const aId = String(assignmentId);
       const data = await fetchAssignmentDetail(token, aId);
@@ -412,7 +412,7 @@ export default function AssignmentDetailPage() {
     } catch (err) {
       console.error('Error fetching assignment detail:', err);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 
@@ -583,9 +583,12 @@ export default function AssignmentDetailPage() {
         violationCount: studentViolationCount,
         violationLogs: studentViolations,
       };
-      await submitAssignment(token, String(assignmentId), answersList, meta);
+      const submitted = await submitAssignment(token, String(assignmentId), answersList, meta);
+      if (submitted) {
+        setMySubmission(submitted);
+      }
       setIsSubmitConfirmOpen(false);
-      await fetchData();
+      await fetchData(true);
     } catch (err) {
       console.error(err);
       alert('Lỗi nộp bài');
@@ -599,17 +602,31 @@ export default function AssignmentDetailPage() {
     if (!selectedSub) return;
     setSavingGrade(true);
 
+    const targetSubId = selectedSub.id;
+    const targetScore = Number(gradeScore);
+    const targetFeedback = gradeFeedback;
+
+    // 1. Cập nhật lạc quan (Optimistic update) ngay lập tức vào state - 0ms delay!
+    setSubmissions((prev) =>
+      prev.map((s) =>
+        s.id === targetSubId
+          ? { ...s, score: targetScore, feedback: targetFeedback, status: 'GRADED' }
+          : s
+      )
+    );
+    setSelectedSub(null);
+    setGradeFeedback('');
+
     try {
       await gradeAssignmentSubmission(
         token,
         String(assignmentId),
-        selectedSub.id,
-        Number(gradeScore),
-        gradeFeedback
+        targetSubId,
+        targetScore,
+        targetFeedback
       );
-      setSelectedSub(null);
-      setGradeFeedback('');
-      await fetchData();
+      // Cập nhật ngầm trong nền không gây giật lag hay trắng trang
+      await fetchData(true);
     } catch (err) {
       console.error(err);
       alert('Lỗi lưu điểm');
@@ -1089,8 +1106,8 @@ export default function AssignmentDetailPage() {
                                   key={opt.id}
                                   className={`flex items-center gap-3 p-2.5 rounded-lg cursor-pointer text-xs font-medium select-none border transition-colors ${
                                     isSelected
-                                      ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 border-blue-400 font-semibold ring-1 ring-blue-500/30'
-                                      : 'bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800/60'
+                                      ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 border-blue-400 ring-1 ring-blue-500/30'
+                                      : 'bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/60'
                                   }`}
                                 >
                                   <input

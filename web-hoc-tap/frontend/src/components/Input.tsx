@@ -18,9 +18,9 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         <input
           type={type}
           ref={ref}
-          className={`w-full px-4 py-2.5 bg-google-input dark:bg-google-input-dark border-0 text-slate-900 dark:text-slate-100 ${
-            pill ? 'rounded-full' : 'rounded-2xl'
-          } text-sm outline-none focus:outline-none focus:ring-0 placeholder-slate-400 dark:placeholder-slate-500 disabled:opacity-50 transition-colors ${className}`}
+          className={`w-full px-3.5 py-2.5 bg-white dark:bg-[#1e1f20] border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 focus:border-google-blue dark:focus:border-blue-500 focus:ring-1 focus:ring-google-blue/20 text-slate-900 dark:text-slate-100 ${
+            pill ? 'rounded-full' : 'rounded-xl'
+          } text-sm outline-none placeholder-slate-400 dark:placeholder-slate-500 disabled:opacity-50 transition-colors ${className}`}
           {...props}
         />
         {error && (

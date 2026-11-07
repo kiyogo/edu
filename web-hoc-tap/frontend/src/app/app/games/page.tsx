@@ -119,7 +119,7 @@ function GamesHubContent() {
                       key={m.id}
                       type="button"
                       onClick={() => setActiveSubMode(m.id)}
-                      className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0 ${
+                      className={`px-2.5 py-1 rounded-xl text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0 ${
                         isActive
                           ? 'bg-google-blue text-white shadow-xs'
                           : 'text-slate-600 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
@@ -237,7 +237,7 @@ function GamesHubContent() {
                     key={m.id}
                     type="button"
                     onClick={() => setActiveSubMode(m.id)}
-                    className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0 ${
+                    className={`px-2.5 py-1 rounded-xl text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0 ${
                       isActive
                         ? 'bg-google-blue text-white shadow-xs'
                         : 'text-slate-600 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'

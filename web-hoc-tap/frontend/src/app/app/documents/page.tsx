@@ -1607,15 +1607,19 @@ function DocumentsPageContent() {
   const handleGoToCreate = () => {
     if (typeof window !== 'undefined') {
       if (currentFolderId) {
-        const curFolder = folders.find((f) => f.id === currentFolderId);
-        sessionStorage.setItem('app_active_folder_id', currentFolderId);
-        sessionStorage.setItem('app_active_folder_name', curFolder?.name || '');
+        try {
+          const curFolder = folders.find((f) => f.id === currentFolderId);
+          sessionStorage.setItem('app_active_folder_id', currentFolderId);
+          sessionStorage.setItem('app_active_folder_name', curFolder?.name || '');
+        } catch {}
       } else {
-        sessionStorage.removeItem('app_active_folder_id');
-        sessionStorage.removeItem('app_active_folder_name');
+        try {
+          sessionStorage.removeItem('app_active_folder_id');
+          sessionStorage.removeItem('app_active_folder_name');
+        } catch {}
       }
     }
-    router.push('/documents/create');
+    router.push('/app/documents/create');
   };
 
   if (user && !isTeacher) {
@@ -1847,7 +1851,7 @@ function DocumentsPageContent() {
                         }`}
                       />
                       <span className="text-xs md:text-sm font-medium truncate">
-                        {folder.name}
+                        {(folder.name || '').replace(/^[|\s]+/, '')}
                       </span>
                       {isDropTarget && (
                         <span className="text-[10px] font-bold text-blue-600 dark:text-blue-300 ml-auto mr-1 animate-pulse bg-blue-200/60 dark:bg-blue-950/80 px-2 py-0.5 rounded-full">
@@ -1905,7 +1909,7 @@ function DocumentsPageContent() {
                 const isCut =
                   clipboard?.mode === 'cut' && clipboard.type === 'file' && clipboard.item.id === fileItem.id;
                 const isSelected = selectedItemIds.includes(fileItem.id) || selectedItemId === fileItem.id;
-                const qCount = fileItem.parsedQuiz.questions.length;
+                const qCount = fileItem.parsedQuiz?.questions?.length || 0;
 
                 return (
                   <div
@@ -1956,7 +1960,7 @@ function DocumentsPageContent() {
                           W
                         </div>
                         <span className="text-[11px] font-medium text-slate-800 dark:text-zinc-200 truncate">
-                          {fileItem.name}
+                          {(fileItem.name || '').replace(/^[|\s]+/, '')}
                         </span>
                       </div>
 
@@ -2006,44 +2010,51 @@ function DocumentsPageContent() {
                       </div>
 
                       {/* Real Questions Content */}
-                      <div className="space-y-1 overflow-hidden flex-1 text-[6.5px] leading-tight text-slate-800 dark:text-slate-200">
-                        {fileItem.parsedQuiz.questions.slice(0, 2).map((q, qIdx) => (
-                          <div key={q.id || qIdx} className="space-y-0.5">
-                            <p className="font-bold line-clamp-1">
-                              <span className="text-slate-900 dark:text-white">Câu {qIdx + 1}: </span>
-                              {q.content}
-                            </p>
-                            <div className="grid grid-cols-2 gap-x-1 gap-y-0 text-[5.5px] text-slate-600 dark:text-slate-400 pl-0.5">
-                              {q.options.slice(0, 4).map((opt, optIdx) => {
-                                const label = String.fromCharCode(65 + optIdx);
-                                return (
-                                  <span
-                                    key={optIdx}
-                                    className={`truncate ${
-                                      opt.isCorrect
-                                        ? 'font-bold text-google-blue dark:text-blue-400'
-                                        : ''
-                                    }`}
-                                  >
-                                    {label}. {opt.content}
-                                  </span>
-                                );
-                              })}
+                      {Array.isArray(fileItem.parsedQuiz?.questions) && fileItem.parsedQuiz.questions.length > 0 ? (
+                        <div className="space-y-1 overflow-hidden flex-1 text-[6.5px] leading-tight text-slate-800 dark:text-slate-200">
+                          {fileItem.parsedQuiz.questions.slice(0, 2).map((q, qIdx) => (
+                            <div key={q.id || qIdx} className="space-y-0.5">
+                              <p className="font-bold line-clamp-1">
+                                <span className="text-slate-900 dark:text-white">Câu {qIdx + 1}: </span>
+                                {q.content}
+                              </p>
+                              <div className="grid grid-cols-2 gap-x-1 gap-y-0 text-[5.5px] text-slate-600 dark:text-slate-400 pl-0.5">
+                                {(q.options || []).slice(0, 4).map((opt: any, optIdx: number) => {
+                                  const label = String.fromCharCode(65 + optIdx);
+                                  return (
+                                    <span
+                                      key={optIdx}
+                                      className={`truncate ${
+                                        opt.isCorrect
+                                          ? 'font-bold text-google-blue dark:text-blue-400'
+                                          : ''
+                                      }`}
+                                    >
+                                      {label}. {typeof opt === 'string' ? opt : opt.content}
+                                    </span>
+                                  );
+                                })}
+                              </div>
                             </div>
-                          </div>
-                        ))}
-                        {fileItem.parsedQuiz.questions.length > 2 && (
-                          <p className="text-[5px] text-slate-400 italic text-center">
-                            và {fileItem.parsedQuiz.questions.length - 2} câu hỏi khác
-                          </p>
-                        )}
-                      </div>
+                          ))}
+                          {fileItem.parsedQuiz.questions.length > 2 && (
+                            <p className="text-[5px] text-slate-400 italic text-center">
+                              và {fileItem.parsedQuiz.questions.length - 2} câu hỏi khác
+                            </p>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="flex-1 flex flex-col items-center justify-center p-2 text-center text-slate-400">
+                          <FileText size={20} className="opacity-40 mb-1" />
+                          <span className="text-[7px] text-slate-500 font-medium">Tài liệu đề thi</span>
+                        </div>
+                      )}
 
                       {/* Bottom Watermark / Question summary */}
                       <div className="pt-0.5 flex justify-between items-center text-[5.5px] text-slate-400">
                         <span>Trang 1/1</span>
                         <span className="font-semibold text-slate-500 dark:text-slate-400">
-                          Tổng {qCount} câu
+                          {qCount > 0 ? `Tổng ${qCount} câu` : 'Tài liệu'}
                         </span>
                       </div>
                     </div>
@@ -2064,7 +2075,7 @@ function DocumentsPageContent() {
             top: contextMenu.y,
             left: contextMenu.x,
           }}
-          className="fixed z-50 w-56 min-w-[210px] bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.15)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.5)] border border-slate-200/70 dark:border-white/10 py-1.5 text-xs text-slate-700 dark:text-slate-200 select-none overflow-hidden"
+          className="fixed z-50 w-56 min-w-[210px] bg-white dark:bg-[#1e1f20] rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 p-1.5 text-xs text-slate-700 dark:text-slate-200 select-none overflow-hidden flex flex-col gap-0.5"
           onClick={(e) => e.stopPropagation()}
           onContextMenu={(e) => {
             e.preventDefault();
@@ -2079,7 +2090,7 @@ function DocumentsPageContent() {
                     handlePaste(currentFolderId);
                     setContextMenu((prev) => ({ ...prev, isOpen: false }));
                   }}
-                  className="w-full px-3.5 py-2 flex items-center justify-between gap-6 hover:bg-blue-50 dark:hover:bg-blue-950/40 text-google-blue dark:text-blue-400 transition-colors text-left font-semibold cursor-pointer"
+                  className="w-full px-3 py-2 rounded-xl flex items-center justify-between gap-6 hover:bg-blue-50 dark:hover:bg-blue-950/40 text-google-blue dark:text-blue-400 transition-colors text-left font-semibold cursor-pointer"
                 >
                   <div className="flex items-center gap-2.5 whitespace-nowrap">
                     <ClipboardPaste size={16} className="shrink-0" />
@@ -2094,7 +2105,7 @@ function DocumentsPageContent() {
                   setIsCreateFolderOpen(true);
                   setContextMenu((prev) => ({ ...prev, isOpen: false }));
                 }}
-                className="w-full px-3.5 py-2 flex items-center gap-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left font-medium cursor-pointer whitespace-nowrap"
+                className="w-full px-3 py-2 rounded-xl flex items-center gap-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left font-medium cursor-pointer whitespace-nowrap"
               >
                 <FolderPlus size={16} className="text-google-yellow shrink-0" />
                 <span>Thư mục mới</span>
@@ -2105,7 +2116,7 @@ function DocumentsPageContent() {
                   fileInputRef.current?.click();
                   setContextMenu((prev) => ({ ...prev, isOpen: false }));
                 }}
-                className="w-full px-3.5 py-2 flex items-center gap-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left font-medium cursor-pointer whitespace-nowrap"
+                className="w-full px-3 py-2 rounded-xl flex items-center gap-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left font-medium cursor-pointer whitespace-nowrap"
               >
                 <Upload size={16} className="text-emerald-500 shrink-0" />
                 <span>Tải tệp lên</span>
@@ -2116,7 +2127,7 @@ function DocumentsPageContent() {
                   folderInputRef.current?.click();
                   setContextMenu((prev) => ({ ...prev, isOpen: false }));
                 }}
-                className="w-full px-3.5 py-2 flex items-center gap-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left font-medium cursor-pointer whitespace-nowrap"
+                className="w-full px-3 py-2 rounded-xl flex items-center gap-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left font-medium cursor-pointer whitespace-nowrap"
               >
                 <FolderUp size={16} className="text-amber-500 shrink-0" />
                 <span>Tải thư mục lên</span>
@@ -2127,7 +2138,7 @@ function DocumentsPageContent() {
                   handleGoToCreate();
                   setContextMenu((prev) => ({ ...prev, isOpen: false }));
                 }}
-                className="w-full px-3.5 py-2 flex items-center gap-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left font-medium cursor-pointer whitespace-nowrap"
+                className="w-full px-3 py-2 rounded-xl flex items-center gap-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left font-medium cursor-pointer whitespace-nowrap"
               >
                 <Sparkles size={16} className="text-google-blue shrink-0" />
                 <span>Tạo mới</span>
@@ -2137,7 +2148,7 @@ function DocumentsPageContent() {
                 onClick={() => {
                   setContextMenu((prev) => ({ ...prev, isOpen: false }));
                 }}
-                className="w-full px-3.5 py-2 flex items-center gap-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left text-slate-500 cursor-pointer whitespace-nowrap"
+                className="w-full px-3 py-2 rounded-xl flex items-center gap-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left text-slate-500 cursor-pointer whitespace-nowrap"
               >
                 <RotateCw size={15} className="shrink-0" />
                 <span>Làm mới danh sách</span>
@@ -2152,7 +2163,7 @@ function DocumentsPageContent() {
                   setCurrentFolderId(contextMenu.folder!.id);
                   setContextMenu((prev) => ({ ...prev, isOpen: false }));
                 }}
-                className="w-full px-3.5 py-2 flex items-center gap-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left font-medium cursor-pointer whitespace-nowrap"
+                className="w-full px-3 py-2 rounded-xl flex items-center gap-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left font-medium cursor-pointer whitespace-nowrap"
               >
                 <FolderOpen size={16} className="text-google-yellow shrink-0" />
                 <span>Mở thư mục</span>
@@ -2163,7 +2174,7 @@ function DocumentsPageContent() {
                   handleCopy('folder', contextMenu.folder!);
                   setContextMenu((prev) => ({ ...prev, isOpen: false }));
                 }}
-                className="w-full px-3.5 py-2 flex items-center justify-between gap-6 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left font-medium cursor-pointer"
+                className="w-full px-3 py-2 rounded-xl flex items-center justify-between gap-6 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left font-medium cursor-pointer"
               >
                 <div className="flex items-center gap-2.5 whitespace-nowrap">
                   <Copy size={15} className="text-slate-500 shrink-0" />
@@ -2177,7 +2188,7 @@ function DocumentsPageContent() {
                   handleCut('folder', contextMenu.folder!);
                   setContextMenu((prev) => ({ ...prev, isOpen: false }));
                 }}
-                className="w-full px-3.5 py-2 flex items-center justify-between gap-6 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left font-medium cursor-pointer"
+                className="w-full px-3 py-2 rounded-xl flex items-center justify-between gap-6 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left font-medium cursor-pointer"
               >
                 <div className="flex items-center gap-2.5 whitespace-nowrap">
                   <Scissors size={15} className="text-slate-500 shrink-0" />
@@ -2190,7 +2201,7 @@ function DocumentsPageContent() {
                 onClick={() => {
                   handleOpenRename('folder', contextMenu.folder!.id, contextMenu.folder!.name);
                 }}
-                className="w-full px-3.5 py-2 flex items-center gap-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left font-medium cursor-pointer whitespace-nowrap"
+                className="w-full px-3 py-2 rounded-xl flex items-center gap-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left font-medium cursor-pointer whitespace-nowrap"
               >
                 <Edit2 size={15} className="text-slate-500 shrink-0" />
                 <span>Đổi tên</span>
@@ -2210,7 +2221,7 @@ function DocumentsPageContent() {
                   }
                   setContextMenu((prev) => ({ ...prev, isOpen: false }));
                 }}
-                className="w-full px-3.5 py-2 flex items-center gap-2.5 hover:bg-red-50 dark:hover:bg-red-950/40 text-red-600 dark:text-red-400 transition-colors text-left font-medium cursor-pointer whitespace-nowrap border-t border-slate-100 dark:border-slate-800"
+                className="w-full px-3 py-2 rounded-xl flex items-center gap-2.5 hover:bg-red-50 dark:hover:bg-red-950/40 text-red-600 dark:text-red-400 transition-colors text-left font-medium cursor-pointer whitespace-nowrap"
               >
                 <Trash2 size={15} className="shrink-0" />
                 <span>Xóa</span>
@@ -2225,7 +2236,7 @@ function DocumentsPageContent() {
                   handleCopy('file', contextMenu.file!);
                   setContextMenu((prev) => ({ ...prev, isOpen: false }));
                 }}
-                className="w-full px-3.5 py-2 flex items-center justify-between gap-6 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left font-medium cursor-pointer"
+                className="w-full px-3 py-2 rounded-xl flex items-center justify-between gap-6 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left font-medium cursor-pointer"
               >
                 <div className="flex items-center gap-2.5 whitespace-nowrap">
                   <Copy size={15} className="text-slate-500 shrink-0" />
@@ -2239,7 +2250,7 @@ function DocumentsPageContent() {
                   handleCut('file', contextMenu.file!);
                   setContextMenu((prev) => ({ ...prev, isOpen: false }));
                 }}
-                className="w-full px-3.5 py-2 flex items-center justify-between gap-6 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left font-medium cursor-pointer"
+                className="w-full px-3 py-2 rounded-xl flex items-center justify-between gap-6 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left font-medium cursor-pointer"
               >
                 <div className="flex items-center gap-2.5 whitespace-nowrap">
                   <Scissors size={15} className="text-slate-500 shrink-0" />
@@ -2253,7 +2264,7 @@ function DocumentsPageContent() {
                   handleDownloadFile(contextMenu.file!);
                   setContextMenu((prev) => ({ ...prev, isOpen: false }));
                 }}
-                className="w-full px-3.5 py-2 flex items-center gap-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left font-medium cursor-pointer whitespace-nowrap"
+                className="w-full px-3 py-2 rounded-xl flex items-center gap-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left font-medium cursor-pointer whitespace-nowrap"
               >
                 <Download size={15} className="text-slate-500 shrink-0" />
                 <span>Tải xuống</span>
@@ -2263,7 +2274,7 @@ function DocumentsPageContent() {
                 onClick={() => {
                   handleOpenRename('file', contextMenu.file!.id, contextMenu.file!.name);
                 }}
-                className="w-full px-3.5 py-2 flex items-center gap-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left font-medium cursor-pointer whitespace-nowrap"
+                className="w-full px-3 py-2 rounded-xl flex items-center gap-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left font-medium cursor-pointer whitespace-nowrap"
               >
                 <Edit2 size={15} className="text-slate-500 shrink-0" />
                 <span>Đổi tên</span>
@@ -2284,7 +2295,7 @@ function DocumentsPageContent() {
                   }
                   setContextMenu((prev) => ({ ...prev, isOpen: false }));
                 }}
-                className="w-full px-3.5 py-2 flex items-center gap-2.5 hover:bg-red-50 dark:hover:bg-red-950/40 text-red-600 dark:text-red-400 transition-colors text-left font-medium cursor-pointer whitespace-nowrap border-t border-slate-100 dark:border-slate-800"
+                className="w-full px-3 py-2 rounded-xl flex items-center gap-2.5 hover:bg-red-50 dark:hover:bg-red-950/40 text-red-600 dark:text-red-400 transition-colors text-left font-medium cursor-pointer whitespace-nowrap"
               >
                 <Trash2 size={15} className="shrink-0" />
                 <span>Xóa</span>
@@ -2393,7 +2404,7 @@ function DocumentsPageContent() {
             </div>
           )}
 
-          {parsedPreview && (
+          {parsedPreview && Array.isArray(parsedPreview.questions) && parsedPreview.questions.length > 0 && (
             <div className="p-3.5 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl space-y-2 text-xs">
               <div className="flex items-center justify-between font-bold text-emerald-600 dark:text-emerald-400">
                 <span className="flex items-center gap-1.5">

@@ -121,18 +121,22 @@ function DocumentCreateContent() {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const storedId = sessionStorage.getItem('app_active_folder_id');
-      const storedName = sessionStorage.getItem('app_active_folder_name');
-      const effId = rawFolderId || storedId || null;
-      const effName = rawFolderName || storedName || null;
-      setFolderId(effId);
-      setFolderName(effName);
-      if (effId) sessionStorage.setItem('app_active_folder_id', effId);
-      if (effName) sessionStorage.setItem('app_active_folder_name', effName);
+      try {
+        const storedId = sessionStorage.getItem('app_active_folder_id');
+        const storedName = sessionStorage.getItem('app_active_folder_name');
+        const effId = rawFolderId || storedId || null;
+        const effName = rawFolderName || storedName || null;
+        setFolderId(effId);
+        setFolderName(effName);
+        if (effId) sessionStorage.setItem('app_active_folder_id', effId);
+        if (effName) sessionStorage.setItem('app_active_folder_name', effName);
 
-      if (window.location.search) {
-        const currentState = (window.history.state && typeof window.history.state === 'object') ? window.history.state : {};
-        window.history.replaceState(currentState, '', '/app/documents/create');
+        if (window.location.search) {
+          const currentState = (window.history.state && typeof window.history.state === 'object') ? window.history.state : {};
+          window.history.replaceState(currentState, '', '/app/documents/create');
+        }
+      } catch (err) {
+        console.warn('Storage or history error:', err);
       }
     }
   }, [rawFolderId, rawFolderName]);
@@ -917,7 +921,7 @@ function DocumentCreateContent() {
                       Nội dung câu hỏi:
                     </label>
                     <AutoGrowingTextarea
-                      value={q.content}
+                      value={q.content || ''}
                       onChange={(val) => handleUpdateParsedQuestionContent(qIdx, val)}
                       placeholder="Nhập nội dung câu hỏi"
                       className="p-3 bg-white dark:bg-slate-900/80 border-0 rounded-xl text-slate-900 dark:text-slate-100 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-google-blue/30 leading-relaxed shadow-none"
@@ -925,7 +929,7 @@ function DocumentCreateContent() {
                   </div>
 
                   {/* Options List */}
-                  {q.options && q.options.length > 0 ? (
+                  {Array.isArray(q.options) && q.options.length > 0 ? (
                     <div className="space-y-1.5">
                       <label className="text-[11px] font-semibold text-slate-600 dark:text-slate-300 flex items-center justify-between">
                         <span>Các phương án lựa chọn:</span>
@@ -1035,7 +1039,7 @@ function DocumentCreateContent() {
                   className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-none border-0"
                   onClick={() => {
                     setIsPreviewModalOpen(false);
-                    if (parsedExamData.examUrl) router.push(parsedExamData.examUrl);
+                    if (parsedExamData?.examUrl) router.push(parsedExamData.examUrl);
                   }}
                 >
                   <Play size={14} className="mr-1 fill-current" />

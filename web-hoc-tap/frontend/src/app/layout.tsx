@@ -1,13 +1,14 @@
 import React from 'react';
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Be_Vietnam_Pro } from 'next/font/google';
 import { Providers } from '../components/Providers';
 import './globals.css';
 
-const inter = Inter({
+const beVietnamPro = Be_Vietnam_Pro({
+  weight: ['400', '500', '600', '700', '800', '900'],
   subsets: ['latin', 'vietnamese'],
   display: 'swap',
-  variable: '--font-inter',
+  variable: '--font-be-vietnam',
 });
 
 export const metadata: Metadata = {
@@ -21,8 +22,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="vi" className={`h-full ${inter.variable} ${inter.className}`} suppressHydrationWarning>
+    <html lang="vi" className={`h-full ${beVietnamPro.variable} ${beVietnamPro.className}`} suppressHydrationWarning>
       <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap"
+          rel="stylesheet"
+        />
         {/* Anti-crash shield for third-party extensions like Urban VPN Proxy (prevents M_ID error) */}
         <script
           id="urban-vpn-config-shield"

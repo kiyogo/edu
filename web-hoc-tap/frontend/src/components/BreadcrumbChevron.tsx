@@ -197,56 +197,47 @@ export function BreadcrumbChevron({
       {/* Windows 11 Address Bar Dropdown Menu (Acrylic Frosted Glass Blur) */}
       {isOpen && (
         <div
-          className="absolute left-0 top-full mt-1 z-50 min-w-[200px] max-w-[420px] max-h-[360px] flex flex-col bg-white/95 dark:bg-[#202020]/95 backdrop-blur-xl rounded-xl shadow-[0_8px_28px_rgba(0,0,0,0.22)] dark:shadow-[0_12px_36px_rgba(0,0,0,0.7)] border border-slate-200/80 dark:border-white/10 py-1.5 text-xs select-none overflow-hidden"
+          className="absolute left-0 top-full mt-1.5 z-50 min-w-[200px] max-w-[340px] w-max max-h-[360px] flex flex-col bg-white dark:bg-[#1e1f20] rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 p-1.5 text-xs select-none overflow-hidden animate-in fade-in zoom-in-95 duration-100"
           onClick={(e) => e.stopPropagation()}
         >
-          {menuTitle && (
-            <div className="px-3 pt-1.5 pb-1 text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider select-none mb-0.5">
-              {menuTitle}
-            </div>
-          )}
-          <div className="overflow-y-auto win-scrollbar py-0.5 max-h-[330px]">
+          <div className="overflow-y-auto win-scrollbar p-0.5 max-h-[330px] flex flex-col gap-0.5">
             {items ? (
               items.map((item, idx) => {
                 if (item.isDivider) {
-                  return (
-                    <div
-                      key={item.id || `divider-${idx}`}
-                      className="my-1 border-t border-slate-200/60 dark:border-white/10"
-                    />
-                  );
+                  return null;
                 }
                 return (
                   <button
                     key={item.id || idx}
                     type="button"
+                    title={item.label || item.name}
                     onClick={() => {
                       setIsOpen(false);
                       if (item.onClick) item.onClick();
                       else if (item.href) router.push(item.href);
                     }}
-                    className={`w-full text-left px-3 py-1.5 flex items-center gap-2 hover:bg-slate-200/60 dark:hover:bg-white/10 active:bg-slate-300/60 dark:active:bg-white/15 transition-colors cursor-pointer text-xs rounded-sm ${
+                    className={`w-full text-left px-3 h-9 flex items-center gap-2.5 hover:bg-slate-100 dark:hover:bg-slate-800/80 active:bg-slate-200 dark:active:bg-slate-700 transition-colors cursor-pointer text-xs rounded-xl min-w-0 overflow-hidden font-medium select-none ${
                       item.isActive
-                        ? 'bg-blue-50/80 text-google-blue font-semibold dark:bg-blue-950/50 dark:text-blue-300'
+                        ? 'bg-blue-50 text-google-blue dark:bg-blue-950/50 dark:text-blue-300'
                         : 'text-slate-800 dark:text-slate-200'
                     }`}
                   >
                     {item.icon ? (
-                      <span className="shrink-0 flex items-center justify-center">{item.icon}</span>
+                      <span className="w-5 h-5 flex items-center justify-center shrink-0">{item.icon}</span>
                     ) : (
-                      <span className="w-3.5 h-3.5 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center shrink-0">
-                        <span className="w-1.5 h-1.5 rounded-full bg-slate-500 dark:bg-slate-300" />
+                      <span className="w-5 h-5 flex items-center justify-center shrink-0">
+                        <span className="w-1.5 h-1.5 rounded-full bg-slate-400 dark:bg-slate-500" />
                       </span>
                     )}
-                    <span className="break-words flex-1">{item.label || item.name}</span>
+                    <span className="truncate whitespace-nowrap min-w-0 flex-1">{item.label || item.name}</span>
                     {item.isActive && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-google-blue shrink-0" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-google-blue shrink-0 ml-1" />
                     )}
                   </button>
                 );
               })
             ) : subfolders.length === 0 && subfiles.length === 0 ? (
-              <div className="px-3 py-2 text-xs text-slate-400 dark:text-slate-500 text-center">
+              <div className="px-3 py-2 text-xs text-slate-400 dark:text-slate-500 text-center whitespace-nowrap">
                 Thư mục trống
               </div>
             ) : (
@@ -255,6 +246,7 @@ export function BreadcrumbChevron({
                   <button
                     key={folder.id}
                     type="button"
+                    title={folder.name}
                     onClick={() => {
                       setIsOpen(false);
                       if (onNavigateFolder) onNavigateFolder(folder.id);
@@ -266,32 +258,33 @@ export function BreadcrumbChevron({
                         router.push('/app/documents');
                       }
                     }}
-                    className="w-full text-left px-3 py-1.5 flex items-center gap-2 hover:bg-slate-200/60 dark:hover:bg-white/10 active:bg-slate-300/60 dark:active:bg-white/15 text-slate-800 dark:text-slate-200 transition-colors cursor-pointer text-xs"
+                    className="w-full text-left px-3 h-9 flex items-center gap-2.5 hover:bg-slate-100 dark:hover:bg-slate-800/80 active:bg-slate-200 dark:active:bg-slate-700 text-slate-800 dark:text-slate-200 transition-colors cursor-pointer text-xs rounded-xl min-w-0 overflow-hidden font-medium select-none"
                   >
-                    <Folder size={14} className="text-amber-500 fill-amber-500/20 shrink-0" />
-                    <span className="break-words flex-1">{folder.name}</span>
+                    <span className="w-5 h-5 flex items-center justify-center shrink-0">
+                      <Folder size={15} className="text-amber-500 fill-amber-500/20" />
+                    </span>
+                    <span className="truncate whitespace-nowrap min-w-0 flex-1">{folder.name}</span>
                   </button>
                 ))}
 
-                {subfiles.length > 0 && subfolders.length > 0 && (
-                  <div className="my-1 border-t border-slate-200/40 dark:border-white/10" />
-                )}
-
                 {subfiles.map((file) => {
-                  const cleanDisplayName = file.name.replace(/\.(docx|pdf|txt|xlsx|doc)$/i, '');
+                  const cleanDisplayName = file.name.replace(/\.(docx|pdf|txt|xlsx|doc|json)$/i, '');
                   return (
                     <button
                       key={file.id}
                       type="button"
+                      title={file.name}
                       onClick={() => {
                         setIsOpen(false);
                         if (onNavigateFile) onNavigateFile(file.id);
                         else router.push(`/app/documents/${file.id}`);
                       }}
-                      className="w-full text-left px-3 py-1.5 flex items-center gap-2 hover:bg-slate-200/60 dark:hover:bg-white/10 active:bg-slate-300/60 dark:active:bg-white/15 text-slate-700 dark:text-slate-300 transition-colors cursor-pointer text-xs"
+                      className="w-full text-left px-3 h-9 flex items-center gap-2.5 hover:bg-slate-100 dark:hover:bg-slate-800/80 active:bg-slate-200 dark:active:bg-slate-700 text-slate-700 dark:text-slate-300 transition-colors cursor-pointer text-xs rounded-xl min-w-0 overflow-hidden font-medium select-none"
                     >
-                      <FileText size={14} className="text-blue-500 shrink-0" />
-                      <span className="break-words flex-1">{cleanDisplayName}</span>
+                      <span className="w-5 h-5 flex items-center justify-center shrink-0">
+                        <FileText size={15} className="text-blue-500" />
+                      </span>
+                      <span className="truncate whitespace-nowrap min-w-0 flex-1">{cleanDisplayName}</span>
                     </button>
                   );
                 })}

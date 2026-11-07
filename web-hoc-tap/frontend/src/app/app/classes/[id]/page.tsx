@@ -679,10 +679,10 @@ export default function ClassDetailPage() {
           <button
             type="button"
             onClick={() => setActiveTab('assignments')}
-            className={`px-3.5 py-1.5 text-xs sm:text-sm tracking-tight whitespace-nowrap cursor-pointer transition-all rounded-xl ${
+            className={`px-3.5 py-1.5 text-xs sm:text-sm tracking-tight whitespace-nowrap cursor-pointer transition-all rounded-xl font-medium ${
               activeTab === 'assignments'
-                ? 'bg-blue-50 dark:bg-blue-950/60 text-google-blue dark:text-blue-400 font-semibold shadow-2xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60 font-medium'
+                ? 'bg-blue-50 dark:bg-blue-950/60 text-google-blue dark:text-blue-400 shadow-2xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
             }`}
           >
             Bài tập và Đề thi
@@ -692,10 +692,10 @@ export default function ClassDetailPage() {
             <button
               type="button"
               onClick={() => setActiveTab('students')}
-              className={`px-3.5 py-1.5 text-xs sm:text-sm tracking-tight whitespace-nowrap cursor-pointer transition-all rounded-xl ${
+              className={`px-3.5 py-1.5 text-xs sm:text-sm tracking-tight whitespace-nowrap cursor-pointer transition-all rounded-xl font-medium ${
                 activeTab === 'students'
-                  ? 'bg-blue-50 dark:bg-blue-950/60 text-google-blue dark:text-blue-400 font-semibold shadow-2xs'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60 font-medium'
+                  ? 'bg-blue-50 dark:bg-blue-950/60 text-google-blue dark:text-blue-400 shadow-2xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
               }`}
             >
               Danh sách Học sinh
@@ -705,10 +705,10 @@ export default function ClassDetailPage() {
           <button
             type="button"
             onClick={() => setActiveTab('gradebook')}
-            className={`px-3.5 py-1.5 text-xs sm:text-sm tracking-tight whitespace-nowrap cursor-pointer transition-all rounded-xl ${
+            className={`px-3.5 py-1.5 text-xs sm:text-sm tracking-tight whitespace-nowrap cursor-pointer transition-all rounded-xl font-medium ${
               activeTab === 'gradebook'
-                ? 'bg-blue-50 dark:bg-blue-950/60 text-google-blue dark:text-blue-400 font-semibold shadow-2xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60 font-medium'
+                ? 'bg-blue-50 dark:bg-blue-950/60 text-google-blue dark:text-blue-400 shadow-2xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
             }`}
           >
             Bảng điểm

@@ -22,7 +22,7 @@ export const Button: React.FC<ButtonProps> = ({
     primary:
       'bg-google-blue text-white rounded-full active:bg-blue-700 dark:active:bg-blue-600 shadow-none hover:bg-blue-600',
     compose:
-      'bg-google-pill text-google-pill-text dark:bg-google-pill-dark dark:text-google-pill-dark-text rounded-2xl active:bg-blue-200 dark:active:bg-blue-900 font-semibold shadow-sm hover:shadow-md',
+      'bg-google-pill text-google-pill-text dark:bg-google-pill-dark dark:text-google-pill-dark-text rounded-2xl active:bg-blue-200 dark:active:bg-blue-900 font-medium shadow-sm hover:shadow-md',
     secondary:
       'bg-google-hover dark:bg-google-hover-dark text-slate-800 dark:text-slate-200 rounded-full hover:bg-slate-200/70 dark:hover:bg-slate-700/60 active:bg-slate-300 dark:active:bg-slate-700',
     outline:

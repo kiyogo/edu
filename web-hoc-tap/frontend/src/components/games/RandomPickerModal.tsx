@@ -309,7 +309,7 @@ export const RandomPickerModal: React.FC<RandomPickerModalProps> = ({
                   if (isRunning) return;
                   setActiveMode(m.id);
                 }}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
                   isActive
                     ? 'bg-amber-400 text-slate-950 shadow-md scale-105'
                     : 'bg-white/5 hover:bg-white/15 text-purple-200 hover:text-white'

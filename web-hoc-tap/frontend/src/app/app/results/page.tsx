@@ -146,10 +146,17 @@ function ResultsContent() {
       }
 
       const allSubs: any[] = [];
-      for (const cls of studentClasses) {
-        try {
-          const asgs = await fetchClassAssignments(token, cls.id);
-          for (const asg of asgs) {
+      const classAssignmentsList = await Promise.all(
+        studentClasses.map((cls) =>
+          fetchClassAssignments(token, cls.id)
+            .then((asgs) => asgs.map((asg) => ({ asg, cls })))
+            .catch(() => [])
+        )
+      );
+      const flattened = classAssignmentsList.flat();
+      await Promise.all(
+        flattened.map(async ({ asg, cls }) => {
+          try {
             const subs = await fetchAssignmentSubmissions(token, asg.id);
             const mySub = subs.find(
               (s: any) =>
@@ -166,9 +173,9 @@ function ResultsContent() {
                 },
               });
             }
-          }
-        } catch (_) {}
-      }
+          } catch (_) {}
+        })
+      );
       setStudentSubmissionsList(allSubs);
     } catch (err) {
       console.error('Error loading student submissions:', err);
@@ -400,7 +407,7 @@ function ResultsContent() {
 
     const safeName = (selectedClass?.name || 'hoc_tap').trim().replace(/[/\\?%*:|"<>]/g, '_');
     XLSX.writeFile(wb, `Bao_cao_lop_${safeName}.xlsx`);
-    showToast('Đã xuất báo cáo Excel (.xlsx) thành công!');
+    showToast('Đã xuất báo cáo Excel thành công!');
   };
 
   const selectedClass = classes.find((c) => c.id === selectedClassId);
@@ -462,7 +469,7 @@ function ResultsContent() {
                     variant="primary"
                     size="sm"
                     onClick={handleExportExcel}
-                    className="flex items-center gap-1.5 text-xs font-semibold"
+                    className="flex items-center gap-1.5 text-xs font-normal"
                   >
                     <Download size={14} />
                     <span>Xuất báo cáo Excel</span>
@@ -488,7 +495,7 @@ function ResultsContent() {
     >
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 px-4 py-2.5 rounded-lg text-xs font-semibold flex items-center gap-2 shadow-lg animate-in fade-in slide-in-from-bottom-2 duration-200">
+        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 px-4 py-2.5 rounded-lg text-xs font-normal flex items-center gap-2 shadow-lg animate-in fade-in slide-in-from-bottom-2 duration-200">
           <CheckCircle2 size={16} className="text-emerald-400 dark:text-emerald-600" />
           <span>{toastMessage}</span>
         </div>
@@ -498,7 +505,7 @@ function ResultsContent() {
         {loading ? (
           <div className="py-20 text-center space-y-3">
             <div className="inline-block w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-            <p className="text-xs font-semibold text-slate-500">Đang tải dữ liệu báo cáo</p>
+            <p className="text-xs font-normal text-slate-500">Đang tải dữ liệu báo cáo</p>
           </div>
         ) : isTeacher ? (
           /* ================= TEACHER VIEW ================= */
@@ -508,28 +515,28 @@ function ResultsContent() {
               {/* Frameless Global KPI Summary */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 pt-2">
                 <div className="space-y-1">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
+                  <span className="text-xs font-normal text-slate-500 block">
                     Tổng số lớp phụ trách
                   </span>
-                  <div className="text-3xl font-extrabold text-slate-950 dark:text-slate-100 tracking-tight">
+                  <div className="text-3xl font-normal text-slate-950 dark:text-slate-100 tracking-tight">
                     {globalOverview.totalClassCount} <span className="text-xs text-slate-400 font-normal">lớp</span>
                   </div>
                 </div>
 
                 <div className="space-y-1">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
+                  <span className="text-xs font-normal text-slate-500 block">
                     Tổng số học sinh
                   </span>
-                  <div className="text-3xl font-extrabold text-slate-950 dark:text-slate-100 tracking-tight">
+                  <div className="text-3xl font-normal text-slate-950 dark:text-slate-100 tracking-tight">
                     {globalOverview.totalStudentCount} <span className="text-xs text-slate-400 font-normal">học sinh</span>
                   </div>
                 </div>
 
                 <div className="space-y-1 col-span-2 sm:col-span-1">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
+                  <span className="text-xs font-normal text-slate-500 block">
                     Trạng thái hệ thống
                   </span>
-                  <div className="text-lg font-bold text-emerald-600 dark:text-emerald-400 pt-1">
+                  <div className="text-lg font-normal text-emerald-600 dark:text-emerald-400 pt-1">
                     Đang hoạt động
                   </div>
                 </div>
@@ -539,7 +546,7 @@ function ResultsContent() {
               <div className="space-y-4 pt-2">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
-                    <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                    <h3 className="text-base font-normal text-slate-900 dark:text-slate-100 flex items-center gap-2">
                       <GraduationCap size={18} className="text-blue-600 dark:text-blue-400" />
                       Chọn lớp học để xem báo cáo chi tiết
                     </h3>
@@ -553,7 +560,7 @@ function ResultsContent() {
                         placeholder="Tìm lớp học hoặc mã lớp"
                         value={classSearch}
                         onChange={(e) => setClassSearch(e.target.value)}
-                        className="pl-8 pr-3 py-1.5 bg-slate-100/70 dark:bg-slate-800/70 text-slate-900 dark:text-slate-100 rounded-lg text-xs font-medium outline-none w-[220px]"
+                        className="pl-8 pr-3 py-1.5 bg-white dark:bg-[#1e1f20] border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-lg text-xs font-medium outline-none focus:border-google-blue focus:ring-1 focus:ring-google-blue/20 w-[220px]"
                       />
                     </div>
                   )}
@@ -565,7 +572,7 @@ function ResultsContent() {
                       <GraduationCap size={32} />
                     </div>
                     <div className="space-y-1 max-w-md mx-auto">
-                      <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                      <h3 className="text-sm font-normal text-slate-900 dark:text-slate-100">
                         Bạn chưa tạo lớp học nào
                       </h3>
                       <p className="text-xs text-slate-500">
@@ -575,7 +582,7 @@ function ResultsContent() {
                     <Button
                       variant="primary"
                       onClick={() => router.push('/app/classes')}
-                      className="font-bold text-xs"
+                      className="font-normal text-xs"
                     >
                       Tạo lớp học ngay
                     </Button>
@@ -593,7 +600,7 @@ function ResultsContent() {
                         className="py-4 flex items-center justify-between gap-4 cursor-pointer hover:bg-slate-50/50 dark:hover:bg-slate-900/30 px-2 rounded-lg transition-colors group"
                       >
                         <div className="space-y-0.5">
-                          <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                          <h4 className="text-sm font-normal text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                             {cls.name}
                           </h4>
                           <div className="flex items-center gap-3 text-xs text-slate-500">
@@ -605,7 +612,7 @@ function ResultsContent() {
                         </div>
 
                         <div className="flex items-center gap-3">
-                          <span className="text-xs font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1">
+                          <span className="text-xs font-normal text-blue-600 dark:text-blue-400 flex items-center gap-1">
                             Xem báo cáo
                             <ChevronRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
                           </span>
@@ -646,7 +653,7 @@ function ResultsContent() {
                     <button
                       key={tab.id}
                       onClick={() => setSelectedTimeRange(tab.id as any)}
-                      className={`px-2.5 py-0.5 rounded-full text-xs font-semibold transition-all ${
+                      className={`px-2.5 py-0.5 rounded-full text-xs font-normal transition-all ${
                         selectedTimeRange === tab.id
                           ? 'bg-blue-600 text-white'
                           : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -661,29 +668,29 @@ function ResultsContent() {
               {/* 1. FRAMELESS KEY KPI METRICS */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                 <div className="space-y-1">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
+                  <span className="text-xs font-normal text-slate-500 block">
                     Tổng học sinh
                   </span>
-                  <div className="text-3xl font-extrabold text-slate-950 dark:text-slate-100 tracking-tight">
+                  <div className="text-3xl font-normal text-slate-950 dark:text-slate-100 tracking-tight">
                     {classStats.totalStudents}
                   </div>
                 </div>
 
                 <div className="space-y-1">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
+                  <span className="text-xs font-normal text-slate-500 block">
                     Bài tập đã giao
                   </span>
-                  <div className="text-3xl font-extrabold text-slate-950 dark:text-slate-100 tracking-tight">
+                  <div className="text-3xl font-normal text-slate-950 dark:text-slate-100 tracking-tight">
                     {classStats.totalAssignments}
                   </div>
                 </div>
 
                 <div className="space-y-1">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
+                  <span className="text-xs font-normal text-slate-500 block">
                     Điểm trung bình
                   </span>
                   <div className="flex items-baseline gap-1.5">
-                    <span className="text-3xl font-extrabold text-blue-600 dark:text-blue-400 tracking-tight">
+                    <span className="text-3xl font-normal text-blue-600 dark:text-blue-400 tracking-tight">
                       {classStats.overallAverage}
                     </span>
                     {classStats.overallAverage !== '--' && (
@@ -693,10 +700,10 @@ function ResultsContent() {
                 </div>
 
                 <div className="space-y-1">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
+                  <span className="text-xs font-normal text-slate-500 block">
                     Tỷ lệ nộp bài
                   </span>
-                  <div className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 tracking-tight">
+                  <div className="text-3xl font-normal text-emerald-600 dark:text-emerald-400 tracking-tight">
                     {classStats.overallCompletionRate}%
                   </div>
                 </div>
@@ -707,12 +714,12 @@ function ResultsContent() {
                 <div className="lg:col-span-2 space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                      <h3 className="text-sm font-normal text-slate-900 dark:text-slate-100 flex items-center gap-2">
                         <BarChart3 size={16} className="text-blue-600 dark:text-blue-400" />
-                        Phổ điểm & Phân loại học lực
+                        Phổ điểm phân loại học lực
                       </h3>
                     </div>
-                    <span className="text-xs font-bold text-blue-600 dark:text-blue-400">
+                    <span className="text-xs font-normal text-blue-600 dark:text-blue-400">
                       Thang điểm 10
                     </span>
                   </div>
@@ -720,31 +727,31 @@ function ResultsContent() {
                   <div className="space-y-3">
                     {[
                       {
-                        label: 'Xuất sắc (9.0 - 10.0)',
+                        label: 'Xuất sắc',
                         count: classStats.distribution.excellent,
                         color: 'bg-emerald-500',
                         textColor: 'text-emerald-600 dark:text-emerald-400',
                       },
                       {
-                        label: 'Giỏi (8.0 - 8.9)',
+                        label: 'Giỏi',
                         count: classStats.distribution.good,
                         color: 'bg-blue-500',
                         textColor: 'text-blue-600 dark:text-blue-400',
                       },
                       {
-                        label: 'Khá (6.5 - 7.9)',
+                        label: 'Khá',
                         count: classStats.distribution.fair,
                         color: 'bg-cyan-500',
                         textColor: 'text-cyan-600 dark:text-cyan-400',
                       },
                       {
-                        label: 'Trung bình (5.0 - 6.4)',
+                        label: 'Trung bình',
                         count: classStats.distribution.average,
                         color: 'bg-amber-500',
                         textColor: 'text-amber-600 dark:text-amber-400',
                       },
                       {
-                        label: 'Yếu / Chưa đạt (< 5.0)',
+                        label: 'Yếu hoặc chưa đạt',
                         count: classStats.distribution.poor,
                         color: 'bg-rose-500',
                         textColor: 'text-rose-600 dark:text-rose-400',
@@ -761,11 +768,11 @@ function ResultsContent() {
                       return (
                         <div key={idx} className="space-y-1">
                           <div className="flex items-center justify-between text-xs">
-                            <span className="font-semibold text-slate-700 dark:text-slate-300">
+                            <span className="font-normal text-slate-700 dark:text-slate-300">
                               {item.label}
                             </span>
                             <div className="flex items-center gap-2">
-                              <span className={`font-bold ${item.textColor}`}>
+                              <span className={`font-normal ${item.textColor}`}>
                                 {item.count} bài
                               </span>
                               <span className="text-[11px] text-slate-400 font-mono">
@@ -788,26 +795,26 @@ function ResultsContent() {
                 <div className="space-y-4">
                   <div className="flex items-center gap-2">
                     <Sparkles size={16} className="text-blue-600 dark:text-blue-400" />
-                    <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100">Thông tin tổng hợp lớp</h4>
+                    <h4 className="font-normal text-sm text-slate-900 dark:text-slate-100">Thông tin tổng hợp lớp</h4>
                   </div>
 
 
                   <div className="pt-2 space-y-2 text-xs">
                     <div className="flex items-center justify-between">
                       <span className="text-slate-500">Điểm cao nhất</span>
-                      <span className="font-bold text-emerald-600 dark:text-emerald-400 font-mono">
+                      <span className="font-normal text-emerald-600 dark:text-emerald-400 font-mono">
                         {classStats.maxScore !== null ? `${classStats.maxScore}` : '--'}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-slate-500">Điểm thấp nhất</span>
-                      <span className="font-bold text-amber-600 dark:text-amber-400 font-mono">
+                      <span className="font-normal text-amber-600 dark:text-amber-400 font-mono">
                         {classStats.minScore !== null ? `${classStats.minScore}` : '--'}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-slate-500">Bài cần chấm</span>
-                      <span className="font-bold text-blue-600 dark:text-blue-400 font-mono">
+                      <span className="font-normal text-blue-600 dark:text-blue-400 font-mono">
                         {classStats.pendingGradingCount} bài
                       </span>
                     </div>
@@ -818,7 +825,7 @@ function ResultsContent() {
               {/* 3. FRAMELESS ASSIGNMENTS PERFORMANCE TABLE */}
               <div className="space-y-4 pt-2">
                 <div className="flex items-center justify-between gap-2">
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                  <h3 className="text-sm font-normal text-slate-900 dark:text-slate-100 flex items-center gap-2">
                     <FileText size={16} className="text-blue-600 dark:text-blue-400" />
                     Danh sách bài tập đã giao {classStats.assignmentMetrics.length}
                   </h3>
@@ -831,16 +838,16 @@ function ResultsContent() {
                       variant="primary"
                       size="sm"
                       onClick={() => router.push('/app/documents')}
-                      className="text-xs font-bold"
+                      className="text-xs font-normal"
                     >
-                      Tạo & Giao bài tập ngay
+                      Tạo bài tập ngay
                     </Button>
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs border-collapse">
                       <thead>
-                        <tr className="text-slate-400 text-[11px] font-bold uppercase tracking-wider">
+                        <tr className="text-slate-400 text-[11px] font-normal">
                           <th className="py-2.5 px-2">Bài tập</th>
                           <th className="py-2.5 px-2 text-center">Thang điểm</th>
                           <th className="py-2.5 px-2 text-center">Đã nộp</th>
@@ -856,7 +863,7 @@ function ResultsContent() {
                             className="hover:bg-slate-50/50 dark:hover:bg-slate-900/30 transition-colors"
                           >
                             <td className="py-3 px-2">
-                              <div className="font-bold text-slate-900 dark:text-slate-100">
+                              <div className="font-normal text-slate-900 dark:text-slate-100">
                                 {asg.title}
                               </div>
                               <div className="text-[11px] text-slate-400 flex items-center gap-2 mt-0.5">
@@ -868,16 +875,16 @@ function ResultsContent() {
                                 </span>
                               </div>
                             </td>
-                            <td className="py-3 px-2 text-center font-mono font-semibold text-slate-600 dark:text-slate-400">
+                            <td className="py-3 px-2 text-center font-mono font-normal text-slate-600 dark:text-slate-400">
                               {asg.maxScore || 10}
                             </td>
-                            <td className="py-3 px-2 text-center font-bold text-slate-900 dark:text-slate-100">
+                            <td className="py-3 px-2 text-center font-normal text-slate-900 dark:text-slate-100">
                               {asg.submissionCount} / {classStats.totalStudents}
                             </td>
-                            <td className="py-3 px-2 text-center font-bold text-slate-700 dark:text-slate-300">
+                            <td className="py-3 px-2 text-center font-normal text-slate-700 dark:text-slate-300">
                               {asg.completionRate}%
                             </td>
-                            <td className="py-3 px-2 text-center font-mono font-extrabold text-sm text-blue-600 dark:text-blue-400">
+                            <td className="py-3 px-2 text-center font-mono font-normal text-sm text-blue-600 dark:text-blue-400">
                               {asg.averageScore}
                             </td>
                             <td className="py-3 px-2 text-right">
@@ -885,7 +892,7 @@ function ResultsContent() {
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => router.push(`/app/assignments/${asg.id}`)}
-                                className="text-xs font-bold text-blue-600 dark:text-blue-400"
+                                className="text-xs font-normal text-blue-600 dark:text-blue-400"
                               >
                                 Xem bài nộp
                               </Button>
@@ -902,7 +909,7 @@ function ResultsContent() {
               <div className="space-y-4 pt-2">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
-                    <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                    <h3 className="text-sm font-normal text-slate-900 dark:text-slate-100 flex items-center gap-2">
                       <Award size={16} className="text-amber-500" />
                       Danh sách lớp
                     </h3>
@@ -917,7 +924,7 @@ function ResultsContent() {
                           placeholder="Tìm học sinh"
                           value={studentSearch}
                           onChange={(e) => setStudentSearch(e.target.value)}
-                          className="pl-8 pr-3 py-1 bg-slate-100/70 dark:bg-slate-800/70 text-slate-900 dark:text-slate-100 rounded-lg text-xs font-medium outline-none w-[180px]"
+                          className="pl-8 pr-3 py-1 bg-white dark:bg-[#1e1f20] border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-lg text-xs font-medium outline-none focus:border-google-blue focus:ring-1 focus:ring-google-blue/20 w-[180px]"
                         />
                       </div>
 
@@ -926,10 +933,10 @@ function ResultsContent() {
                         onChange={(val) => setScoreFilter(val as any)}
                         options={[
                           { value: 'all', label: 'Tất cả học lực' },
-                          { value: 'excellent', label: 'Xuất sắc (≥ 9.0)' },
-                          { value: 'good', label: 'Giỏi (8.0 - 8.9)' },
-                          { value: 'average', label: 'Khá (6.5 - 7.9)' },
-                          { value: 'needs_attention', label: 'Cần cố gắng (< 6.5)' },
+                          { value: 'excellent', label: 'Xuất sắc' },
+                          { value: 'good', label: 'Giỏi' },
+                          { value: 'average', label: 'Khá' },
+                          { value: 'needs_attention', label: 'Cần cố gắng' },
                         ]}
                         size="sm"
                         className="w-auto min-w-[150px]"
@@ -946,7 +953,7 @@ function ResultsContent() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleCopyClassCode(selectedClass?.code || '')}
-                        className="text-xs font-bold gap-1.5"
+                        className="text-xs font-normal gap-1.5"
                       >
                         <Copy size={13} />
                         Sao chép mã lớp
@@ -955,7 +962,7 @@ function ResultsContent() {
                         variant="ghost"
                         size="sm"
                         onClick={() => router.push(`/app/classes/${selectedClass?.id}`)}
-                        className="text-xs font-bold text-blue-600 dark:text-blue-400"
+                        className="text-xs font-normal text-blue-600 dark:text-blue-400"
                       >
                         Thêm học sinh
                       </Button>
@@ -969,7 +976,7 @@ function ResultsContent() {
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs border-collapse">
                       <thead>
-                        <tr className="text-slate-400 text-[11px] font-bold uppercase tracking-wider">
+                        <tr className="text-slate-400 text-[11px] font-normal">
                           <th className="py-2.5 px-2 w-12 text-center">Hạng</th>
                           <th className="py-2.5 px-2">Học sinh</th>
                           <th className="py-2.5 px-2 text-center">Số bài đã nộp</th>
@@ -986,46 +993,46 @@ function ResultsContent() {
                           >
                             <td className="py-3 px-2 text-center">
                               {st.rawAvgScore >= 0 && idx === 0 ? (
-                                <span className="font-bold text-xs">🥇</span>
+                                <span className="font-normal text-xs">🥇</span>
                               ) : st.rawAvgScore >= 0 && idx === 1 ? (
-                                <span className="font-bold text-xs">🥈</span>
+                                <span className="font-normal text-xs">🥈</span>
                               ) : st.rawAvgScore >= 0 && idx === 2 ? (
-                                <span className="font-bold text-xs">🥉</span>
+                                <span className="font-normal text-xs">🥉</span>
                               ) : (
-                                <span className="font-mono font-bold text-slate-400">
+                                <span className="font-mono font-normal text-slate-400">
                                   #{idx + 1}
                                 </span>
                               )}
                             </td>
                             <td className="py-3 px-2">
-                              <div className="font-bold text-slate-900 dark:text-slate-100">
+                              <div className="font-normal text-slate-900 dark:text-slate-100">
                                 {st.name}
                               </div>
                               <div className="text-[11px] text-slate-400 font-mono">
                                 {st.email || 'Học sinh lớp'}
                               </div>
                             </td>
-                            <td className="py-3 px-2 text-center font-semibold text-slate-700 dark:text-slate-300">
+                            <td className="py-3 px-2 text-center font-normal text-slate-700 dark:text-slate-300">
                               {st.submittedCount} / {classStats.totalAssignments}
                             </td>
                             <td className="py-3 px-2 text-center">
-                              <span className="font-mono font-extrabold text-sm text-blue-600 dark:text-blue-400">
+                              <span className="font-mono font-normal text-sm text-blue-600 dark:text-blue-400">
                                 {st.averageScore}
                               </span>
                             </td>
                             <td className="py-3 px-2 text-center">
-                              <span className={`text-xs font-bold ${st.rankColor}`}>
+                              <span className={`text-xs font-normal ${st.rankColor}`}>
                                 {st.rankLabel}
                               </span>
                             </td>
                             <td className="py-3 px-2 text-right">
                               {classStats.totalAssignments > 0 && st.submittedCount >= classStats.totalAssignments ? (
-                                <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center justify-end gap-1">
+                                <span className="text-[11px] font-normal text-emerald-600 dark:text-emerald-400 flex items-center justify-end gap-1">
                                   <CheckCircle2 size={13} />
                                   Đã nộp đủ
                                 </span>
                               ) : (
-                                <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 flex items-center justify-end gap-1">
+                                <span className="text-[11px] font-normal text-amber-600 dark:text-amber-400 flex items-center justify-end gap-1">
                                   <AlertCircle size={13} />
                                   {classStats.totalAssignments > 0 ? 'Chưa đủ bài' : 'Chưa có bài'}
                                 </span>
@@ -1046,28 +1053,28 @@ function ResultsContent() {
             {/* Frameless Student KPI Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-2">
               <div className="space-y-1">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
-                  Điểm trung bình (GPA)
+                <span className="text-xs font-normal text-slate-500 block">
+                  Điểm trung bình
                 </span>
-                <div className="text-3xl font-extrabold text-blue-600 dark:text-blue-400">
+                <div className="text-3xl font-normal text-blue-600 dark:text-blue-400">
                   {studentGpa || '--'} {studentGpa && <span className="text-xs text-slate-400 font-normal">/ 10</span>}
                 </div>
               </div>
 
               <div className="space-y-1">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
+                <span className="text-xs font-normal text-slate-500 block">
                   Bài tập đã hoàn thành
                 </span>
-                <div className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400">
+                <div className="text-3xl font-normal text-emerald-600 dark:text-emerald-400">
                   {studentSubmissionsList.length}
                 </div>
               </div>
 
               <div className="space-y-1">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
+                <span className="text-xs font-normal text-slate-500 block">
                   Lớp học đang tham gia
                 </span>
-                <div className="text-3xl font-extrabold text-purple-600 dark:text-purple-400">
+                <div className="text-3xl font-normal text-purple-600 dark:text-purple-400">
                   {classes.length}
                 </div>
               </div>
@@ -1075,9 +1082,9 @@ function ResultsContent() {
 
             {/* Frameless Submissions List */}
             <div className="space-y-4 pt-2">
-              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+              <h3 className="text-sm font-normal text-slate-900 dark:text-slate-100 flex items-center gap-2">
                 <FileText size={16} className="text-blue-600 dark:text-blue-400" />
-                Lịch sử các bài kiểm tra & bài tập đã làm
+                Lịch sử các bài kiểm tra
               </h3>
 
               {studentSubmissionsList.length === 0 ? (
@@ -1087,7 +1094,7 @@ function ResultsContent() {
                     variant="outline"
                     size="sm"
                     onClick={() => router.push('/app/classes')}
-                    className="text-xs font-bold"
+                    className="text-xs font-normal"
                   >
                     Xem danh sách lớp học
                   </Button>
@@ -1101,7 +1108,7 @@ function ResultsContent() {
                       className="py-3.5 flex items-center justify-between gap-4 cursor-pointer hover:bg-slate-50/50 dark:hover:bg-slate-900/30 px-2 rounded-lg transition-colors"
                     >
                       <div className="space-y-0.5">
-                        <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100">
+                        <h4 className="font-normal text-sm text-slate-900 dark:text-slate-100">
                           {sub.assignment?.title || 'Bài tập trắc nghiệm'}
                         </h4>
                         <p className="text-xs text-slate-500">
@@ -1111,12 +1118,12 @@ function ResultsContent() {
                       </div>
 
                       <div className="text-right">
-                        <span className="font-mono font-extrabold text-base text-blue-600 dark:text-blue-400">
+                        <span className="font-mono font-normal text-base text-blue-600 dark:text-blue-400">
                           {sub.score !== null && sub.score !== undefined
                             ? `${sub.score} / ${sub.assignment?.maxScore || 10}`
                             : 'Chờ chấm'}
                         </span>
-                        <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold block">
+                        <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-normal block">
                           {sub.status === 'GRADED' ? 'Đã chấm điểm' : 'Đã nộp bài'}
                         </span>
                       </div>

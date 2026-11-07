@@ -1,0 +1,153 @@
+export interface Chapter {
+  id: string;
+  index: string;
+  title: string;
+  highlight: string;
+  subtitle: string;
+  kicker: string;
+  range: [number, number]; // [start, end]
+  status?: string;
+  category?: string;
+}
+
+export const CHAPTERS_V2: Chapter[] = [
+  {
+    id: 'beginning',
+    index: '01',
+    kicker: 'PHÂN ĐOẠN 01 — THE BEGINNING',
+    title: 'KIYOEDU',
+    highlight: 'Kiến tạo tương lai giáo dục số.',
+    subtitle: 'Mở đầu một kỷ nguyên học tập thông minh, nơi tri thức và công nghệ hội tụ.',
+    range: [0.0, 0.06],
+  },
+  {
+    id: 'knowledge',
+    index: '02',
+    kicker: 'PHÂN ĐOẠN 02 — THE WORLD OF KNOWLEDGE',
+    title: 'Tri thức',
+    highlight: 'không có giới hạn.',
+    subtitle: 'Học tập, sáng tạo và khám phá trong không gian toán học, vật lý và cấu trúc dữ liệu đa chiều.',
+    range: [0.06, 0.12],
+  },
+  {
+    id: 'vietnam',
+    index: '03',
+    kicker: 'PHÂN ĐOẠN 03 — VIETNAM FROM ABOVE',
+    title: 'Từ Việt Nam.',
+    highlight: 'Cho tương lai Việt Nam.',
+    subtitle: 'Dải đất hình chữ S kiên cường, nơi mỗi mái trường là một hạt mầm tri thức vươn mình.',
+    range: [0.12, 0.19],
+  },
+  {
+    id: 'school',
+    index: '04',
+    kicker: 'PHÂN ĐOẠN 04 — THE DIGITAL SCHOOL',
+    title: 'Một ngôi trường.',
+    highlight: 'Một hệ sinh thái số.',
+    subtitle: 'Không gian học đường chuẩn mực, hiện đại, kết nối lớp học thông minh và trang thiết bị số.',
+    range: [0.19, 0.26],
+  },
+  {
+    id: 'platform',
+    index: '05',
+    kicker: 'PHÂN ĐOẠN 05 — KIYOEDU PLATFORM',
+    title: 'Nền tảng KiyoEdu.',
+    highlight: 'Quản lý học sinh & Sổ điểm điện tử.',
+    subtitle: 'Hệ thống quản lý lớp học, giáo viên, học sinh, điểm danh và sổ điểm — Dự án Web-Học-Tập đang phát triển.',
+    range: [0.26, 0.34],
+    status: 'WEB-QUẢN-LÝ-HỌC-SINH & WEB-HỌC-TẬP (ĐANG PHÁT TRIỂN)',
+  },
+  {
+    id: 'data',
+    index: '06',
+    kicker: 'PHÂN ĐOẠN 06 — DATA BECOMES INTELLIGENCE',
+    title: 'Dữ liệu rõ ràng.',
+    highlight: 'Quyết định chính xác hơn.',
+    subtitle: 'Chuyển hóa dữ liệu học tập thành đồ thị trực quan, hỗ trợ nhà trường đánh giá công bằng và kịp thời.',
+    range: [0.34, 0.41],
+  },
+  {
+    id: 'library',
+    index: '07',
+    kicker: 'PHÂN ĐOẠN 07 — THE DIGITAL LIBRARY',
+    title: 'Tri thức & AI.',
+    highlight: 'Không giới hạn.',
+    subtitle: 'Kho tài liệu học tập, giáo án và sách số mở rộng — Định hướng phát triển thư viện số KiyoEdu.',
+    range: [0.41, 0.49],
+    status: 'ĐỊNH HƯỚNG PHÁT TRIỂN',
+  },
+  {
+    id: 'immersive',
+    index: '08',
+    kicker: 'PHÂN ĐOẠN 08 — IMMERSIVE LEARNING',
+    title: 'Khi kiến thức',
+    highlight: 'trở thành trải nghiệm.',
+    subtitle: 'Từ quy mô vũ trụ bao la đến cấu trúc nguyên tử vi mô — mô phỏng học tập trải nghiệm thế hệ mới.',
+    range: [0.49, 0.56],
+    status: 'MÔ PHỎNG Ý TƯỞNG TƯƠNG LAI',
+  },
+  {
+    id: 'ai',
+    index: '09',
+    kicker: 'PHÂN ĐOẠN 09 — KIYO AI',
+    title: 'Công nghệ',
+    highlight: 'mở ra những cách học mới.',
+    subtitle: 'Trợ lý học tập thông minh phân tích năng lực và gợi ý lộ trình ôn luyện — Định hướng nghiên cứu Kiyo AI.',
+    range: [0.56, 0.63],
+    status: 'ĐỊNH HƯỚNG NGHIÊN CỨU & PHÁT TRIỂN',
+  },
+  {
+    id: 'connected',
+    index: '10',
+    kicker: 'PHÂN ĐOẠN 10 — CONNECTED EDUCATION',
+    title: 'Kết nối con người.',
+    highlight: 'Đồng hành cùng giáo dục.',
+    subtitle: 'Mạng lưới 4 trụ cột: Nhà trường — Giáo viên — Học sinh — Phụ huynh luôn gắn kết bền chặt.',
+    range: [0.63, 0.70],
+  },
+  {
+    id: 'ecosystem',
+    index: '11',
+    kicker: 'PHÂN ĐOẠN 11 — THE EDUCATION ECOSYSTEM',
+    title: 'Hệ sinh thái',
+    highlight: 'công nghệ toàn diện.',
+    subtitle: 'Đồng bộ đa nền tảng: Web Quản lý, App Android Sổ liên lạc, Web Học tập và API Backend trung tâm.',
+    range: [0.70, 0.77],
+  },
+  {
+    id: 'tech',
+    index: '12',
+    kicker: 'PHÂN ĐOẠN 12 — TECHNOLOGY BEHIND THE EXPERIENCE',
+    title: 'Kiến trúc vững chắc.',
+    highlight: 'Xây dựng cho sự phát triển lâu dài.',
+    subtitle: 'Phân tách 5 tầng công nghệ: Giao diện UI, Ứng dụng, Dịch vụ Backend, Cơ sở dữ liệu và Hạ tầng đám mây.',
+    range: [0.77, 0.84],
+  },
+  {
+    id: 'human',
+    index: '13',
+    kicker: 'PHÂN ĐOẠN 13 — THE HUMAN FUTURE',
+    title: 'Công nghệ vì con người.',
+    highlight: 'Giáo dục vì tương lai.',
+    subtitle: 'Mọi thuật toán và mã nguồn đều phụng sự giá trị nhân văn của người dạy và người học.',
+    range: [0.84, 0.90],
+  },
+  {
+    id: 'perspective',
+    index: '14',
+    kicker: 'PHÂN ĐOẠN 14 — A NEW PERSPECTIVE',
+    title: 'Một tầm nhìn mới',
+    highlight: 'vươn tầm quốc gia.',
+    subtitle: 'Từ một lớp học thân thương vươn lên thành biểu tượng tri thức của thế hệ trẻ Việt Nam.',
+    range: [0.90, 0.95],
+  },
+  {
+    id: 'future',
+    index: '15',
+    kicker: 'PHÂN ĐOẠN 15 — THE FUTURE STARTS HERE',
+    title: 'KIYOEDU.',
+    highlight: 'Hành trình bắt đầu từ hôm nay.',
+    subtitle: 'Khám phá mã nguồn mở và cùng chúng tôi kiến tạo tương lai giáo dục Việt Nam.',
+    range: [0.95, 1.0],
+  },
+];

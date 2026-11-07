@@ -772,7 +772,7 @@ export default function AiChatView({ initialSessionId }: { initialSessionId?: st
   const renderInputBox = () => (
     <div className="w-full">
       {/* Main Rounded Input Box - Disabled since feature is in development */}
-      <div className="bg-slate-100 dark:bg-[#2f2f2f] rounded-[28px] pl-2.5 sm:pl-3 pr-1.5 py-1.5 flex items-end gap-1.5 sm:gap-2 border border-slate-200/50 dark:border-slate-800/50 outline-none ring-0 shadow-xs min-h-[52px] cursor-not-allowed opacity-85">
+      <div className="bg-white dark:bg-[#1e1f20] rounded-[28px] pl-2.5 sm:pl-3 pr-1.5 py-1.5 flex items-end gap-1.5 sm:gap-2 border border-slate-200 dark:border-slate-700 outline-none ring-0 shadow-xs min-h-[52px] cursor-not-allowed opacity-85">
         {/* Plus Icon (Disabled) */}
         <button
           type="button"
@@ -855,7 +855,7 @@ export default function AiChatView({ initialSessionId }: { initialSessionId?: st
                       onClick={() => handleSelectSession(session.id)}
                       className={`w-full text-left px-3 py-2 text-xs md:text-[13px] leading-snug truncate rounded-xl transition-colors duration-150 cursor-pointer block border-0 outline-none ring-0 focus:outline-none focus:ring-0 select-none ${
                         isActive
-                          ? 'bg-blue-50/90 dark:bg-blue-950/50 text-google-blue dark:text-blue-300 font-semibold'
+                          ? 'bg-blue-50/90 dark:bg-blue-950/50 text-google-blue dark:text-blue-300 font-medium'
                           : 'text-slate-700 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800/60 font-medium'
                       }`}
                       title={cleanTitle}
@@ -883,24 +883,26 @@ export default function AiChatView({ initialSessionId }: { initialSessionId?: st
           </div>
           <div className="flex-1 overflow-y-auto overflow-x-hidden w-full flex flex-col no-scrollbar">
             {!isChatStarted ? (
-              /* Initial Screen: Centered and balanced with direct inline style */
-              <div className="flex-1 flex flex-col items-center justify-start space-y-5 sm:space-y-6 max-w-2xl mx-auto w-full px-3 sm:px-4 pt-[18vh] md:pt-[230px] pb-8 animate-fade-in">
-                {/* Spark Icon inside rounded box */}
-                <div className="w-12 h-12 rounded-2xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 flex items-center justify-center shadow-md">
-                  <Sparkles size={24} />
-                </div>
+              /* Initial Screen: Centered across entire browser window horizontally, raised higher vertically */
+              <div className="fixed inset-x-0 top-16 bottom-0 z-10 pointer-events-none flex flex-col items-center justify-center pb-32 sm:pb-44 -translate-y-6 sm:-translate-y-10 px-4 animate-fade-in">
+                <div className="pointer-events-auto flex flex-col items-center space-y-5 sm:space-y-6 max-w-2xl w-full">
+                  {/* Spark Icon inside rounded box */}
+                  <div className="w-12 h-12 rounded-2xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 flex items-center justify-center shadow-md">
+                    <Sparkles size={24} />
+                  </div>
 
-                <div className="flex flex-col items-center gap-2.5">
-                  <span className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-medium bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60 select-none">
-                    Tính năng đang phát triển
-                  </span>
-                  <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 dark:text-white text-center tracking-tight leading-tight">
-                    Hôm nay bạn muốn hỏi điều gì?
-                  </h1>
-                </div>
+                  <div className="flex flex-col items-center gap-2.5">
+                    <span className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-medium bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60 select-none">
+                      Tính năng đang phát triển
+                    </span>
+                    <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 dark:text-white text-center tracking-tight leading-tight">
+                      Hôm nay bạn muốn hỏi điều gì?
+                    </h1>
+                  </div>
 
-                {/* Centered Input Box directly in middle of screen */}
-                {renderInputBox()}
+                  {/* Centered Input Box directly in middle of screen */}
+                  {renderInputBox()}
+                </div>
               </div>
             ) : (
               /* Active Chat Flow */

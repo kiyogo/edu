@@ -185,7 +185,7 @@ export const AppShell: React.FC<AppShellProps> = ({
         {/* Center: Google Drive Search Bar */}
         <div className="hidden md:block flex-1 max-w-2xl mx-2 relative z-10">
           <form onSubmit={handleSearch} className="w-full">
-            <div className="flex items-center gap-3 px-4 py-2 bg-google-hover/80 dark:bg-[#282a2c] hover:bg-google-hover dark:hover:bg-[#323437] rounded-full transition-all text-slate-900 dark:text-slate-100 border border-transparent">
+            <div className="flex items-center gap-3 px-4 py-2 bg-white dark:bg-[#1e1f20] border border-slate-200/90 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 focus-within:border-google-blue focus-within:ring-2 focus-within:ring-google-blue/15 rounded-full transition-all text-slate-900 dark:text-slate-100 shadow-2xs">
               <Search size={18} className="text-slate-500 shrink-0" />
               <input
                 type="text"

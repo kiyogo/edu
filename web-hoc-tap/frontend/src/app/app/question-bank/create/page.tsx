@@ -232,7 +232,7 @@ export default function CreateQuestionPage() {
                 value={qContent}
                 onChange={(e) => setQContent(e.target.value)}
                 placeholder="Nhập nội dung câu hỏi hoặc nhập từ khóa chủ đề rồi bấm ✨ SI Tự Điền Câu Hỏi"
-                className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-xs focus:outline-none focus:ring-1 focus:ring-google-blue resize-none"
+                className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e1f20] text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:border-google-blue focus:ring-1 focus:ring-google-blue/20 resize-none"
                 rows={3}
                 required
               />
@@ -302,7 +302,7 @@ export default function CreateQuestionPage() {
                       type="text"
                       value={opt.content}
                       onChange={(e) => handleOptionChange(idx, e.target.value)}
-                      className="flex-1 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-xs focus:outline-none focus:ring-1 focus:ring-google-blue"
+                      className="flex-1 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e1f20] text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:border-google-blue focus:ring-1 focus:ring-google-blue/20"
                       placeholder={`Nội dung lựa chọn ${String.fromCharCode(65 + idx)}`}
                       required
                     />
@@ -328,7 +328,7 @@ export default function CreateQuestionPage() {
                 value={qExplanation}
                 onChange={(e) => setQExplanation(e.target.value)}
                 placeholder="Nhập giải thích đáp án cho học sinh xem sau khi hoàn thành"
-                className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-xs focus:outline-none focus:ring-1 focus:ring-google-blue resize-none"
+                className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e1f20] text-slate-900 dark:text-slate-100 text-xs focus:outline-none focus:border-google-blue focus:ring-1 focus:ring-google-blue/20 resize-none"
                 rows={2}
               />
             </div>

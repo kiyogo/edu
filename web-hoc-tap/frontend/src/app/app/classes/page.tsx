@@ -262,18 +262,18 @@ export default function ClassesPage() {
               <ChevronDown size={14} className="opacity-80" />
             </Button>
 
-            {/* Dropdown Menu (Clean, no group) */}
+            {/* Dropdown Menu (Clean, rounded items, no border clash) */}
             {isDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-[#1e1f20] rounded-xl shadow-lg border border-slate-200 dark:border-slate-800 py-1 z-50 animate-in fade-in zoom-in-95 duration-100">
+              <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-[#1e1f20] rounded-2xl border border-slate-200 dark:border-slate-800 p-1.5 shadow-xl z-50 animate-in fade-in zoom-in-95 duration-100 flex flex-col gap-0.5 overflow-hidden">
                 <button
                   type="button"
                   onClick={() => {
                     setIsDropdownOpen(false);
                     setIsCreateModalOpen(true);
                   }}
-                  className="w-full text-left px-4 py-2.5 text-xs font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2.5 transition-colors cursor-pointer"
+                  className="w-full text-left px-3 py-2 text-xs font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl flex items-center gap-2.5 transition-colors cursor-pointer"
                 >
-                  <Plus size={15} className="text-blue-600 dark:text-blue-400" />
+                  <Plus size={16} className="text-blue-600 dark:text-blue-400 shrink-0" />
                   <span>Tạo lớp học</span>
                 </button>
 
@@ -283,9 +283,9 @@ export default function ClassesPage() {
                     setIsDropdownOpen(false);
                     setIsExcelModalOpen(true);
                   }}
-                  className="w-full text-left px-4 py-2.5 text-xs font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2.5 transition-colors cursor-pointer"
+                  className="w-full text-left px-3 py-2 text-xs font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl flex items-center gap-2.5 transition-colors cursor-pointer"
                 >
-                  <FileSpreadsheet size={15} className="text-emerald-600 dark:text-emerald-400" />
+                  <FileSpreadsheet size={16} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
                   <span>Tạo danh sách lớp bằng excel</span>
                 </button>
 
@@ -296,9 +296,9 @@ export default function ClassesPage() {
                     setSelectedClassIdsToCopy(classes.map((c) => c.id));
                     setIsNewTermModalOpen(true);
                   }}
-                  className="w-full text-left px-4 py-2.5 text-xs font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2.5 transition-colors cursor-pointer"
+                  className="w-full text-left px-3 py-2 text-xs font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl flex items-center gap-2.5 transition-colors cursor-pointer"
                 >
-                  <BookOpen size={15} className="text-indigo-600 dark:text-indigo-400" />
+                  <BookOpen size={16} className="text-indigo-600 dark:text-indigo-400 shrink-0" />
                   <span>Tạo lớp cho khóa mới</span>
                 </button>
               </div>

@@ -50,15 +50,19 @@ export default function PlansPage() {
       }
     }
 
-    // Tự động cuộn xuống phần thông tin các gói dịch vụ mà không bị che mất tiêu đề
+    // Tự động cuộn xuống phần thông tin các gói dịch vụ và cân bằng đều trên dưới theo màn hình
     const scrollToPackage = () => {
       const packageEl = document.getElementById('package');
       const viewport = document.getElementById('app-main-viewport');
       if (packageEl && viewport) {
-        const targetScrollTop = Math.max(0, packageEl.offsetTop - 24);
+        const viewportHeight = viewport.clientHeight;
+        const packageHeight = packageEl.offsetHeight;
+        // Cân bằng khoảng cách trên và dưới đúng bằng nhau tùy theo chiều cao màn hình
+        const verticalMargin = Math.max(16, Math.floor((viewportHeight - packageHeight) / 2));
+        const targetScrollTop = Math.max(0, packageEl.offsetTop - verticalMargin);
         viewport.scrollTo({ top: targetScrollTop, behavior: 'smooth' });
       } else if (packageEl) {
-        packageEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        packageEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
     };
 
@@ -146,7 +150,7 @@ export default function PlansPage() {
         </div>
       )}
 
-      <div className="max-w-5xl mx-auto space-y-8 sm:space-y-10 pt-2 sm:pt-4 pb-32 sm:pb-48">
+      <div className="max-w-5xl mx-auto space-y-8 sm:space-y-10 pt-2 sm:pt-4 pb-6 sm:pb-8">
 
         {/* TOP SECTION: ỦNG HỘ NHÀ PHÁT TRIỂN & VIETQR CARD TO HƠN */}
         <section className="space-y-6">
@@ -226,7 +230,7 @@ export default function PlansPage() {
         </section>
 
         {/* BOTTOM SECTION: THÔNG TIN CÁC GÓI DỊCH VỤ */}
-        <section id="package" className="space-y-6 pt-12 md:pt-16 scroll-mt-20">
+        <section id="package" className="space-y-6 pt-6 md:pt-8 scroll-mt-6">
           <div className="flex flex-col items-center justify-center gap-2.5 pt-3">
             <span className="inline-flex items-center px-4 py-1.5 bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/60 rounded-full text-xs font-semibold shadow-2xs">
               Tính năng này đang được phát triển
@@ -240,7 +244,7 @@ export default function PlansPage() {
           <div className="flex flex-wrap justify-center items-center gap-3">
             <span
               className={`text-xs font-medium cursor-pointer ${
-                billingCycle === 'monthly' ? 'text-slate-900 dark:text-white font-bold' : 'text-slate-500'
+                billingCycle === 'monthly' ? 'text-slate-900 dark:text-white' : 'text-slate-500'
               }`}
               onClick={() => setBillingCycle('monthly')}
             >
@@ -264,7 +268,7 @@ export default function PlansPage() {
             <div className="flex items-center gap-1.5 cursor-pointer" onClick={() => setBillingCycle('yearly')}>
               <span
                 className={`text-xs font-medium ${
-                  billingCycle === 'yearly' ? 'text-slate-900 dark:text-white font-bold' : 'text-slate-500'
+                  billingCycle === 'yearly' ? 'text-slate-900 dark:text-white' : 'text-slate-500'
                 }`}
               >
                 Thanh toán theo Năm

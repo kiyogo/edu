@@ -136,7 +136,7 @@ export function CustomSelect<T extends string | number>({
         <div
           ref={menuRef}
           role="listbox"
-          className={`absolute z-50 left-0 min-w-full w-max max-w-sm mt-1.5 max-h-72 overflow-y-auto win-scrollbar rounded-2xl border border-slate-200/90 dark:border-slate-700 bg-white dark:bg-[#1e1f20] shadow-xl shadow-slate-900/10 dark:shadow-black/50 p-1.5 animate-in fade-in zoom-in-95 duration-150 ${menuClassName}`}
+          className={`absolute z-50 left-0 min-w-full w-max max-w-sm mt-1.5 max-h-72 overflow-y-auto win-scrollbar rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1e1f20] shadow-xl p-1.5 animate-in fade-in zoom-in-95 duration-150 flex flex-col gap-0.5 ${menuClassName}`}
         >
           {options.length === 0 ? (
             <div className="px-3.5 py-3 text-xs text-slate-400 text-center">
@@ -168,9 +168,9 @@ export function CustomSelect<T extends string | number>({
                       : 'text-slate-900 dark:text-slate-100 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 cursor-pointer'
                   }`}
                 >
-                  <span className="pr-2 break-words text-left flex items-center gap-2 min-w-0">
+                  <span className="pr-2 text-left flex items-center gap-2 min-w-0 overflow-hidden flex-1">
                     {option.icon && <span className="shrink-0">{option.icon}</span>}
-                    <span className="truncate">{option.label}</span>
+                    <span className="truncate whitespace-nowrap min-w-0 flex-1">{option.label}</span>
                   </span>
                   {isSelected && (
                     <Check size={size === 'sm' ? 14 : 16} className="text-google-blue dark:text-blue-400 shrink-0 ml-2" />

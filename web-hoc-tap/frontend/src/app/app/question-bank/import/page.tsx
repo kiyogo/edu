@@ -132,7 +132,7 @@ export default function ImportQuestionPage() {
                 value={importJsonText}
                 onChange={(e) => setImportJsonText(e.target.value)}
                 placeholder='[{"content": "Câu hỏi 1", "options": [{"content": "Đáp án A", "isCorrect": true}, {"content": "Đáp án B", "isCorrect": false}]}]'
-                className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-google-blue"
+                className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e1f20] text-slate-900 dark:text-slate-100 text-xs font-mono focus:outline-none focus:border-google-blue focus:ring-1 focus:ring-google-blue/20"
                 rows={10}
                 required
               />

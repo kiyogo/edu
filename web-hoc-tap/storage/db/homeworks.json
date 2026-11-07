@@ -1,0 +1,201 @@
+[
+  {
+    "title": "123",
+    "description": "Bài tập từ tài liệu 123.json",
+    "documentId": "demvv114lzhxo7",
+    "classId": "cls1793349614188fe04",
+    "className": "12333333333",
+    "deadline": null,
+    "durationMinutes": 30,
+    "minSubmitMinutes": 0,
+    "shuffleQuestions": true,
+    "shuffleOptions": false,
+    "showAnswersAfterSubmit": false,
+    "antiCheating": true,
+    "antiCheatConfig": {
+      "forceFullscreen": true,
+      "detectTabSwitch": true,
+      "maxViolations": 3,
+      "preventCopyPaste": true,
+      "autoSubmitOnLimit": true
+    },
+    "quizData": {
+      "title": "123",
+      "durationMinutes": 30,
+      "questions": [
+        {
+          "id": "q_1",
+          "content": "Trong chuỗi số tự nhiên liên tiếp từ 1 đến 3, số đứng ngay sau số 122 và ngay trước số 124 là số nào?",
+          "points": 10,
+          "options": [
+            {
+              "content": "A. $121$",
+              "isCorrect": true
+            },
+            {
+              "content": "B. $122$",
+              "isCorrect": false
+            },
+            {
+              "content": "C. $123$",
+              "isCorrect": false
+            },
+            {
+              "content": "D. $124$",
+              "isCorrect": false
+            }
+          ],
+          "explanation": "",
+          "type": "multiple_choice"
+        }
+      ]
+    },
+    "id": "hw17934722299223vp8p",
+    "pin": "439043",
+    "createdAt": "2026-10-31T18:43:49.922Z",
+    "status": "active",
+    "_count": {
+      "submissions": 1
+    }
+  },
+  {
+    "title": "123",
+    "description": "Bài tập từ tài liệu 123.json",
+    "documentId": "demvv114lzhxo7",
+    "classId": null,
+    "className": "Công khai / Tự do",
+    "deadline": null,
+    "durationMinutes": 30,
+    "minSubmitMinutes": 0,
+    "shuffleQuestions": true,
+    "shuffleOptions": false,
+    "showAnswersAfterSubmit": false,
+    "antiCheating": false,
+    "antiCheatConfig": {
+      "forceFullscreen": true,
+      "detectTabSwitch": true,
+      "maxViolations": 3,
+      "preventCopyPaste": true,
+      "autoSubmitOnLimit": true
+    },
+    "quizData": {
+      "title": "123",
+      "durationMinutes": 30,
+      "questions": [
+        {
+          "id": "q_1",
+          "content": "Trong chuỗi số tự nhiên liên tiếp từ 1 đến 3, số đứng ngay sau số 122 và ngay trước số 124 là số nào?",
+          "points": 10,
+          "options": [
+            {
+              "content": "A. $121$",
+              "isCorrect": true
+            },
+            {
+              "content": "B. $122$",
+              "isCorrect": false
+            },
+            {
+              "content": "C. $123$",
+              "isCorrect": false
+            },
+            {
+              "content": "D. $124$",
+              "isCorrect": false
+            }
+          ],
+          "explanation": "",
+          "type": "multiple_choice"
+        }
+      ]
+    },
+    "id": "hw1793394167840fdnrp",
+    "pin": "981259",
+    "createdAt": "2026-10-30T21:02:47.840Z",
+    "status": "active",
+    "_count": {
+      "submissions": 0
+    }
+  },
+  {
+    "title": "123",
+    "description": "Bài tập từ tài liệu 123.json",
+    "documentId": "demvv114lzhxo7",
+    "classId": null,
+    "className": "Công khai / Tự do",
+    "deadline": null,
+    "durationMinutes": 30,
+    "minSubmitMinutes": 0,
+    "shuffleQuestions": true,
+    "shuffleOptions": false,
+    "showAnswersAfterSubmit": false,
+    "antiCheating": false,
+    "antiCheatConfig": {
+      "forceFullscreen": true,
+      "detectTabSwitch": true,
+      "maxViolations": 3,
+      "preventCopyPaste": true,
+      "autoSubmitOnLimit": true
+    },
+    "quizData": {
+      "title": "123",
+      "durationMinutes": 30,
+      "questions": [
+        {
+          "id": "q_1",
+          "content": "Trong chuỗi số tự nhiên liên tiếp từ 1 đến 3, số đứng ngay sau số 122 và ngay trước số 124 là số nào?",
+          "points": 10,
+          "options": [
+            {
+              "content": "A. $121$",
+              "isCorrect": true
+            },
+            {
+              "content": "B. $122$",
+              "isCorrect": false
+            },
+            {
+              "content": "C. $123$",
+              "isCorrect": false
+            },
+            {
+              "content": "D. $124$",
+              "isCorrect": false
+            }
+          ],
+          "explanation": "",
+          "type": "multiple_choice"
+        }
+      ]
+    },
+    "id": "hw17933752003384si60",
+    "pin": "489983",
+    "createdAt": "2026-10-30T15:46:40.338Z",
+    "status": "active",
+    "_count": {
+      "submissions": 0
+    }
+  },
+  {
+    "id": "hw_test_371713",
+    "pin": "371713",
+    "title": "123",
+    "durationMinutes": 30,
+    "status": "active",
+    "quizData": {
+      "title": "123",
+      "questions": [
+        {
+          "id": "q1",
+          "content": "Câu hỏi 1?",
+          "options": [
+            {
+              "content": "A",
+              "isCorrect": true
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

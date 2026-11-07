@@ -183,7 +183,7 @@ export const ClassroomTeacherHeader: React.FC<ClassroomTeacherHeaderProps> = ({
               key={item.id}
               type="button"
               onClick={item.onClick}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
                 item.isActive
                   ? 'bg-google-blue text-white shadow-xs'
                   : 'text-slate-600 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-white/10'

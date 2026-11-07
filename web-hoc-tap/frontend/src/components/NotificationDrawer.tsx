@@ -120,7 +120,7 @@ export const NotificationDrawer: React.FC = () => {
 
       {/* Popover */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-[#1e1f20] rounded-2xl border border-black/[0.08] dark:border-white/10 shadow-xl shadow-slate-900/10 dark:shadow-black/50 z-50 overflow-hidden flex flex-col p-1.5 animate-in fade-in zoom-in-95 duration-150">
+        <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-[#1e1f20] rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xl z-50 overflow-hidden flex flex-col p-1.5 animate-in fade-in zoom-in-95 duration-150">
           {/* Header */}
           <div className="px-3.5 pt-3 pb-2 flex justify-between items-center bg-transparent">
             <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">

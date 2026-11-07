@@ -1,4 +1,5 @@
 import { safeLocalStorageGet, safeLocalStorageSet, safeLocalStorageRemove } from './safeStorage';
+import { fetchWithTimeout } from './classesApi';
 
 export interface AntiCheatConfig {
   forceFullscreen: boolean;
@@ -170,8 +171,8 @@ export async function createHomework(
     maxScore: 10,
     quiz: {
       id: `quiz_${item.id}`,
-      title: item.quizData.title,
-      questions: item.quizData.questions.map((q, idx) => ({
+      title: item.quizData?.title || item.title || 'Bài tập',
+      questions: (item.quizData?.questions || []).map((q, idx) => ({
         id: `qq_${idx + 1}`,
         question: {
           id: q.id || `q_${idx + 1}`,
@@ -208,6 +209,15 @@ export async function createHomework(
     classAssignList.unshift(legacyFormat);
     safeLocalStorageSet(classAssignKey, JSON.stringify(classAssignList));
   }
+
+  // Đồng bộ lên máy chủ trung tâm để học sinh ở mọi trình duyệt / ẩn danh đều truy cập được
+  try {
+    fetch('/api/homework', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(item),
+    }).catch((err) => console.warn('Lỗi đồng bộ bài tập lên máy chủ:', err));
+  } catch (_) {}
 
   return item;
 }
@@ -317,9 +327,9 @@ export async function getHomeworkByPin(pin: string): Promise<HomeworkItem | null
         try {
           // 1. Thử gọi trực tiếp /api/assignments/:pin nếu cleanPin là ID
           try {
-            const directRes = await fetch(`/api/assignments/${cleanPin}`, {
+            const directRes = await fetchWithTimeout(`/api/assignments/${cleanPin}`, {
               headers: { Authorization: `Bearer ${token}` },
-            });
+            }, 1200);
             if (directRes.ok) {
               const data = await directRes.json();
               if (data && data.id) {
@@ -332,9 +342,9 @@ export async function getHomeworkByPin(pin: string): Promise<HomeworkItem | null
           if (!found) {
             let classesList: any[] = [];
             try {
-              const classRes = await fetch('/api/classes/student', {
+              const classRes = await fetchWithTimeout('/api/classes/student', {
                 headers: { Authorization: `Bearer ${token}` },
-              });
+              }, 1200);
               if (classRes.ok) {
                 const cData = await classRes.json();
                 if (Array.isArray(cData)) {
@@ -345,9 +355,9 @@ export async function getHomeworkByPin(pin: string): Promise<HomeworkItem | null
 
             if (classesList.length === 0) {
               try {
-                const teacherRes = await fetch('/api/classes/teacher', {
+                const teacherRes = await fetchWithTimeout('/api/classes/teacher', {
                   headers: { Authorization: `Bearer ${token}` },
-                });
+                }, 1200);
                 if (teacherRes.ok) {
                   const tData = await teacherRes.json();
                   if (Array.isArray(tData)) classesList = tData;
@@ -359,9 +369,9 @@ export async function getHomeworkByPin(pin: string): Promise<HomeworkItem | null
               if (found) break;
               if (!cls?.id) continue;
               try {
-                const asgRes = await fetch(`/api/assignments/class/${cls.id}`, {
+                const asgRes = await fetchWithTimeout(`/api/assignments/class/${cls.id}`, {
                   headers: { Authorization: `Bearer ${token}` },
-                });
+                }, 1200);
                 if (asgRes.ok) {
                   const asgList = await asgRes.json();
                   if (Array.isArray(asgList)) {
@@ -375,9 +385,9 @@ export async function getHomeworkByPin(pin: string): Promise<HomeworkItem | null
                       return false;
                     });
                     if (matchedAsg) {
-                      const detailRes = await fetch(`/api/assignments/${matchedAsg.id}`, {
+                      const detailRes = await fetchWithTimeout(`/api/assignments/${matchedAsg.id}`, {
                         headers: { Authorization: `Bearer ${token}` },
-                      });
+                      }, 1200);
                       const fullData = detailRes.ok ? await detailRes.json() : matchedAsg;
                       found = formatServerAssignmentToHomework(fullData, cleanPin);
                       break;
@@ -390,6 +400,26 @@ export async function getHomeworkByPin(pin: string): Promise<HomeworkItem | null
         } catch (_) {}
       }
     }
+  }
+
+  // Fallback ưu tiên: Kiểm tra trên máy chủ trung tâm (/api/homework) - hoạt động ở chế độ ẩn danh và mọi thiết bị
+  if (!found) {
+    try {
+      const res = await fetch(`/api/homework?pin=${encodeURIComponent(cleanPin)}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.homework) {
+          found = data.homework;
+          try {
+            const all = getAllHomeworksSync();
+            if (!all.some((h) => h.id === found!.id || h.pin === found!.pin)) {
+              all.unshift(found!);
+              saveHomeworksSync(all);
+            }
+          } catch (_) {}
+        }
+      }
+    } catch (_) {}
   }
 
   if (found) {
@@ -487,7 +517,27 @@ function formatServerAssignmentToHomework(asg: any, pin: string): HomeworkItem {
 export async function getHomeworkById(id: string): Promise<HomeworkItem | null> {
   if (!id) return null;
   const list = getAllHomeworksSync();
-  const found = list.find((h) => h.id === id);
+  let found = list.find((h) => h.id === id);
+
+  if (!found) {
+    try {
+      const res = await fetch(`/api/homework?id=${encodeURIComponent(id)}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.homework) {
+          found = data.homework;
+          try {
+            const all = getAllHomeworksSync();
+            if (!all.some((h) => h.id === found!.id)) {
+              all.unshift(found!);
+              saveHomeworksSync(all);
+            }
+          } catch (_) {}
+        }
+      }
+    } catch (_) {}
+  }
+
   if (found) {
     const subs = getHomeworkSubmissionsSync(found.id);
     return {
@@ -615,5 +665,91 @@ export async function submitHomework(
     safeLocalStorageSet(`app_my_assignment_sub_${hw.id}`, JSON.stringify(legacyItem));
   }
 
+  // Đồng bộ lên máy chủ trung tâm để giáo viên và hệ thống theo dõi trực tiếp
+  try {
+    fetch('/api/homework/submissions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(submission),
+    }).catch((err) => console.warn('Lỗi đồng bộ kết quả nộp bài lên máy chủ:', err));
+  } catch (_) {}
+
   return submission;
 }
+
+/**
+ * Ghi nhận học sinh tham gia phòng chờ hoặc bắt đầu thi
+ */
+export async function recordHomeworkParticipant(
+  pinOrId: string,
+  studentName: string,
+  studentId?: string,
+  homeworkId?: string
+): Promise<void> {
+  const cleanPin = (pinOrId || '').trim().replace(/\s+/g, '');
+  const cleanName = (studentName || '').trim();
+  if (!cleanPin || !cleanName) return;
+
+  try {
+    await fetch('/api/homework/submissions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'join',
+        pin: cleanPin,
+        studentName: cleanName,
+        studentId: studentId || undefined,
+        homeworkId: homeworkId || cleanPin,
+      }),
+    });
+  } catch (_) {}
+}
+
+/**
+ * Lấy danh sách người đã tham gia bài tập (từ máy chủ và bộ nhớ tạm)
+ */
+export async function getHomeworkParticipants(pinOrId: string): Promise<any[]> {
+  const clean = (pinOrId || '').trim().replace(/\s+/g, '');
+  if (!clean) return [];
+
+  let serverParticipants: any[] = [];
+  try {
+    const res = await fetch(`/api/homework/submissions?pin=${encodeURIComponent(clean)}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data.participants)) {
+        serverParticipants = data.participants;
+      }
+    }
+  } catch (err) {
+    console.warn('Lỗi lấy danh sách người tham gia từ máy chủ:', err);
+  }
+
+  // Hợp nhất với dữ liệu local nếu có
+  const localSubs = getHomeworkSubmissionsSync(clean);
+  const combined = [...serverParticipants];
+  for (const loc of localSubs) {
+    const exists = combined.some(
+      (c) => c.studentName?.trim().toLowerCase() === loc.studentName?.trim().toLowerCase()
+    );
+    if (!exists) {
+      combined.push({
+        id: loc.id,
+        homeworkId: loc.homeworkId,
+        pin: loc.pin,
+        studentName: loc.studentName,
+        studentId: loc.studentId,
+        status: 'submitted',
+        score: loc.score,
+        correctCount: loc.correctCount,
+        totalQuestions: loc.totalQuestions,
+        timeSpentSeconds: loc.timeSpentSeconds,
+        submittedAt: loc.submittedAt,
+        joinedAt: loc.submittedAt,
+      });
+    }
+  }
+
+  return combined;
+}
+
